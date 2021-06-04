@@ -13,3 +13,7 @@ MonoBehaviour:
   m_Name: Level3
   m_EditorClassIdentifier: 
   Words: []
+  serializedBoardData:
+    ROWS: 0
+    COLS: 0
+    DataInside: []

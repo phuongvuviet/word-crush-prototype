@@ -10,9 +10,16 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     [SerializeField] Color activeColor, normalColor;
     [SerializeField] Image bgImage;
 
-    Vector2Int positionInBoard;
+    float cellSize;
+    [SerializeField] Vector2Int positionInBoard;
     char letter = ' ';
     bool isPointerDown = false;
+
+    public void UpdateAnchoredPosition()
+    {
+        //Debug.Log(positionInBoard.x + "-" + positionInBoard.y);
+        GetComponent<RectTransform>().anchoredPosition = new Vector2(positionInBoard.y, positionInBoard.x) * cellSize;
+    }
 
     public void SetLetter(char letter)
     {
@@ -25,11 +32,19 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     }
     public void SetPositionInBoard(Vector2Int pos)
     {
+        //Debug.Log($"Update {positionInBoard.x}-{positionInBoard.y} -> {pos.x}-{pos.y}");
         positionInBoard = pos;
     }
     public Vector2Int GetPositionInBoard()
     {
         return positionInBoard;
+    }
+    public void SetCellSize(float size)
+    {
+        cellSize = size;
+        Rect rect = new Rect(0, 0, cellSize, cellSize);
+        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellSize);
+        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellSize);
     }
     public void ChangeColor(bool useActiveColor)
     {
@@ -44,22 +59,22 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (GameController.Instance.HasStartPosition())
+        if (GamePlayController.Instance.HasStartPosition())
         {
-            GameController.Instance.SetWordPosition(positionInBoard);
+            GamePlayController.Instance.SetWordPosition(positionInBoard);
         } 
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (!GameController.Instance.HasStartPosition())
+        if (!GamePlayController.Instance.HasStartPosition())
         {
-            GameController.Instance.SetWordPosition(positionInBoard);
+            GamePlayController.Instance.SetWordPosition(positionInBoard);
         }
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        GameController.Instance.CheckWord();
+        GamePlayController.Instance.CheckWord();
     }
 }

@@ -7,7 +7,6 @@ public class LevelData : ScriptableObject
 {
     public List<string> Words = new List<string>();
     public BoardData serializedBoardData;
-    //[SerializeField] char[,] boardData; 
 
     public bool ContainLetter(int x, int y)
     {
@@ -25,14 +24,8 @@ public class LevelData : ScriptableObject
     {
         return serializedBoardData.ROWS;
     }
-    //public char[,] GetBoardData()
-    //{
-    //    return boardData;
-    //}
     public void SetBoardData(char[,] boardData)
     {
-        //boardData = boardDataParam;
-        Debug.LogError("Set board dataaaaaa");
         serializedBoardData = new BoardData(boardData.GetLength(0), boardData.GetLength(1));
         for (int i = 0; i < serializedBoardData.ROWS; i++)
         {
