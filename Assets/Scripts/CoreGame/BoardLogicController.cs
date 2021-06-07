@@ -116,8 +116,8 @@ public class BoardLogicController
     }
     public List<BoardCell> GetCellsToRemoveAndUpdateOtherCellsPosition(Vector2Int startPosition, Vector2Int endPosition)
     {
-        Debug.Log("Remove cell: " + startPosition + " to: " + endPosition);
-        Debug.Log("Col: " + cols + " rows: " + rows);
+        // Debug.Log("Remove cell: " + startPosition + " to: " + endPosition);
+        // Debug.Log("Col: " + cols + " rows: " + rows);
         List<BoardCell> cellsToRemove = new List<BoardCell>();
         if (startPosition.x == endPosition.x)
         {
@@ -128,10 +128,10 @@ public class BoardLogicController
                 {
                     if (board[j + 1, i] == null)
                     {
-                        Debug.Log("remove cell: " + (j + 1) + " " + i);
+                        // Debug.Log("remove cell: " + (j + 1) + " " + i);
                         break;
                     }
-                    Debug.Log($"{j + 1}:{i} -> {j}{i}");
+                    // Debug.Log($"{j + 1}:{i} -> {j}{i}");
                     board[j, i] = board[j + 1, i];
                     board[j, i].SetPositionInBoard(new Vector2Int(j, i));
                     board[j + 1, i] = null;
@@ -139,14 +139,16 @@ public class BoardLogicController
             }
         } else
         {
-            Debug.LogError("fsdkfljsdlfjsal;jfl;as");
+            // Debug.LogError("fsdkfljsdlfjsal;jfl;as");
             int lowerX = Mathf.Min(startPosition.x, endPosition.x);
             int upperX = Mathf.Max(startPosition.x, endPosition.x);
             int commonY = startPosition.y;
             int gap = upperX - lowerX + 1;
-            for (int i = lowerX; i <= upperX; i++)
+            for (int i = lowerX; i < board.GetLength(0); i++)
             {
-                cellsToRemove.Add(board[i, commonY]);
+                if (i <= upperX) {
+                    cellsToRemove.Add(board[i, commonY]);
+                }
                 if (i + gap < board.GetLength(0) && board[i + gap, commonY] != null)
                 {
                     board[i, commonY] = board[i + gap, commonY];
@@ -156,6 +158,7 @@ public class BoardLogicController
                     board[i, commonY] = null;
                 }
             }
+            // Debug.Log("num cells to remove: " + cellsToRemove.Count);
         }
         return cellsToRemove;
     }

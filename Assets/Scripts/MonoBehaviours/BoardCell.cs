@@ -11,6 +11,7 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     [SerializeField] Image bgImage;
 
     float cellSize;
+    float cellMargin;
     [SerializeField] Vector2Int positionInBoard;
     char letter = ' ';
     bool isPointerDown = false;
@@ -39,12 +40,12 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         return positionInBoard;
     }
-    public void SetCellSize(float size)
+    public void SetCellSizeAndMargin(float size, float margin)
     {
         cellSize = size;
-        Rect rect = new Rect(0, 0, cellSize, cellSize);
-        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellSize);
-        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellSize);
+        cellMargin = margin;
+        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellSize - cellMargin);
+        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellSize - cellMargin);
     }
     public void ChangeColor(bool useActiveColor)
     {

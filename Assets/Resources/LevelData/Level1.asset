@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: Level1
   m_EditorClassIdentifier: 
   Words:
-  - duck
-  - angel
-  - pigeon
-  - plane
+  - dog
+  - cat
+  - ant
+  - cow
+  - fish
   serializedBoardData:
     ROWS: 7
     COLS: 6

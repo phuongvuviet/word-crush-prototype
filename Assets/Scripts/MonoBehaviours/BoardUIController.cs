@@ -4,7 +4,8 @@ using UnityEngine;
 public class BoardUIController : MonoBehaviour 
 {
     [SerializeField] BoardCell cellPrefab;
-
+    [SerializeField] RectTransform cellParent;
+    [SerializeField] float cellMargin = 2f;
     LevelData data;
     BoardCell[,] uiBoard;
     char[,] charBoard;
@@ -12,7 +13,7 @@ public class BoardUIController : MonoBehaviour
     RectTransform rectTrans;
     float cellSize;
     BoardLogicController boardController;
-    BoardDataGenerator boardDataGenerator;
+    BoardDataGenerator2 boardDataGenerator;
 
     private void Awake()
     {
@@ -21,16 +22,27 @@ public class BoardUIController : MonoBehaviour
         boardScreenHeight = rectTrans.rect.height;
     }
 
+    private void Start() {
+        Debug.Log("Phuong");
+    }
+
     public void Initialize(LevelData levelData)
     {
         data = levelData;
 
-        boardDataGenerator = new BoardDataGenerator(data);
+        boardDataGenerator = new BoardDataGenerator2(data);
         charBoard = boardDataGenerator.GenerateBoard();
 
-        cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetMaxCellHeight(), boardScreenWidth / boardDataGenerator.GetMaxCellWidth());
-        Debug.Log($"{boardScreenHeight}/{boardDataGenerator.GetMaxCellHeight()}  --- {boardScreenWidth} / {boardDataGenerator.GetMaxCellWidth()}");
-        Debug.LogError("Cell size: " + cellSize);
+        // cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetMaxColHeight(), boardScreenWidth / boardDataGenerator.GetMaxCellWidth());
+        // Debug.Log($"{boardScreenHeight}/{boardDataGenerator.GetMaxColHeight()}  --- {boardScreenWidth} / {boardDataGenerator.GetMaxCellWidth()}");
+        // Debug.LogError("Cell size: " + cellSize);
+        cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetBoardHeight(), boardScreenWidth / boardDataGenerator.GetBoardWidth());
+        Debug.LogError("Cell size: " + cellSize + "-" + (cellSize * boardDataGenerator.GetBoardWidth()) + "-" + boardScreenWidth);
+        if (cellSize * boardDataGenerator.GetBoardWidth() < boardScreenWidth) {
+            Debug.LogError("in here");
+            cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * boardDataGenerator.GetBoardWidth())) / 2.0f, cellParent.anchoredPosition.y); 
+        }
+
         uiBoard = new BoardCell[charBoard.GetLength(0), charBoard.GetLength(1)];
 
         boardController = new BoardLogicController(uiBoard);
@@ -39,14 +51,20 @@ public class BoardUIController : MonoBehaviour
     public void ShuffleBoard(LevelData levelData)
     {
         ClearUIBoard();
-
-        boardDataGenerator = new BoardDataGenerator(data);
+        boardDataGenerator = new BoardDataGenerator2(data);
         charBoard = boardDataGenerator.GenerateBoard();
-
-        Debug.Log($"virtual: {boardDataGenerator.GetMaxCellWidth()}-{boardDataGenerator.GetMaxCellHeight()} ---{boardDataGenerator.GetBoardWidth()}-{boardDataGenerator.GetBoardHeight()}");
-        cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetMaxCellHeight(), boardScreenWidth / boardDataGenerator.GetMaxCellWidth());
-        Debug.Log($"{boardScreenHeight}/{boardDataGenerator.GetMaxCellHeight()}  --- {boardScreenWidth} / {boardDataGenerator.GetMaxCellWidth()}");
-        Debug.LogError("Cell size: " + cellSize);
+        // Debug.Log($"virtual: {boardDataGenerator.GetMaxCellWidth()}-{boardDataGenerator.GetMaxColHeight()} ---{boardDataGenerator.GetBoardWidth()}-{boardDataGenerator.GetBoardHeight()}");
+        // cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetMaxColHeight(), boardScreenWidth / boardDataGenerator.GetMaxCellWidth());
+        // Debug.Log($"{boardScreenHeight}/{boardDataGenerator.GetMaxColHeight()}  --- {boardScreenWidth} / {boardDataGenerator.GetMaxCellWidth()}");
+        // Debug.LogError("Cell size: " + cellSize);
+        cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetBoardHeight(), boardScreenWidth / boardDataGenerator.GetBoardWidth());
+        Debug.LogError("Cell size: " + cellSize + "-" + (cellSize * boardDataGenerator.GetBoardWidth()) + "-" + boardScreenWidth);
+        if (cellSize * boardDataGenerator.GetBoardWidth() < boardScreenWidth) {
+            Debug.LogError("in here");
+            cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * boardDataGenerator.GetBoardWidth())) / 2.0f, cellParent.anchoredPosition.y); 
+        } else {
+            cellParent.anchoredPosition = new Vector2(0f, cellParent.anchoredPosition.y); 
+        }
 
         uiBoard = new BoardCell[charBoard.GetLength(0), charBoard.GetLength(1)];
         boardController = new BoardLogicController(uiBoard);
@@ -77,10 +95,10 @@ public class BoardUIController : MonoBehaviour
                 //if (data.ContainLetter(i, j))
                 if (charBoard[i, j] != ' ')
                 {
-                    BoardCell newCell = Instantiate(cellPrefab, transform);
+                    BoardCell newCell = Instantiate(cellPrefab, cellParent);
                     newCell.SetLetter(charBoard[i, j]);
                     newCell.SetPositionInBoard(new Vector2Int(i, j));
-                    newCell.SetCellSize(cellSize);
+                    newCell.SetCellSizeAndMargin(cellSize, cellMargin);
                     RectTransform newCellRectTrans = newCell.GetComponent<RectTransform>();
                     newCellRectTrans.anchorMin = Vector2.zero;
                     newCellRectTrans.anchorMax = Vector2.zero;
@@ -127,10 +145,6 @@ public class BoardUIController : MonoBehaviour
                 {
                     uiBoard[i, j].UpdateAnchoredPosition();
                 }
-                //else
-                //{
-                //    break;
-                //}
             }
         }
     }
