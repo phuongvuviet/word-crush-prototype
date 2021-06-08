@@ -56,7 +56,9 @@ public class BoardDataGenerator2
             int rd = 0;
             if (rd == 0)
             {
-                InsertVertical(curWord);
+                // InsertVertical(curWord);
+                InsertHorizontal(curWord);
+
                 // if (!InsertVertical(words[i]))
                 // {
                 //     if (!InsertHorizontal(words[i]))
@@ -140,44 +142,78 @@ public class BoardDataGenerator2
 
     public bool InsertHorizontal(string word)
     {
-        List<Tuple<int, int, int>> rowWidths = GetMaxWidthEachRow();
-        Debug.Log("Row width length: " + rowWidths.Count);
-        Shuffle(rowWidths);
+        // List<Tuple<int, int, int>> rowWidths = GetMaxWidthEachRow();
+        // Debug.Log("Row width length: " + rowWidths.Count);
+        // Shuffle(rowWidths);
+        // int wordLen = word.Length;
+        // Tuple<int,int,int> rowWidth = null;
+        // int maxColumnHeight = GetMaxColumnHeight();
+        // if (maxColumnHeight == boardHeight)
+        // {
+        //     Debug.Log("1 can not insert horizontal");
+        //     return false;
+        // } 
+        // for (int i = 0; i < rowWidths.Count; i++)
+        // {
+        //     if (wordLen <= rowWidths[i].Item2)
+        //     {
+        //         rowWidth = rowWidths[i];
+        //         break;
+        //     }
+        // }
+        // if (rowWidth == null) 
+        // {
+        //     Debug.Log("2 Cann't insert horizontal");
+        //     return false;
+        // } 
+        // int rowIndex = rowWidth.Item1;
+        // int width = rowWidth.Item2;
+        // int startIndex = rowWidth.Item3;
+        // int positionToInsert = UnityEngine.Random.Range(startIndex, startIndex + width - wordLen + 1);
+        // Debug.Log("Row index: " + rowIndex + " width: " + width + " startIndex" + startIndex);
+        // Debug.Log("Position to insert: " + positionToInsert);
+        // // insert word
+        // for (int i = positionToInsert; i < positionToInsert + wordLen; i++)
+        // {
+        //     if (boardData[rowIndex, i] != ' ')
+        //     {
+        //         MoveColUp(rowIndex, i);
+        //     }
+        //     boardData[rowIndex, i] = word[i - positionToInsert];
+        // }
+        // return true;
         int wordLen = word.Length;
-        Tuple<int,int,int> rowWidth = null;
-        int maxColumnHeight = GetMaxColumnHeight();
-        if (maxColumnHeight == boardHeight)
-        {
-            Debug.Log("1 can not insert horizontal");
-            return false;
-        } 
-        for (int i = 0; i < rowWidths.Count; i++)
-        {
-            if (wordLen <= rowWidths[i].Item2)
-            {
-                rowWidth = rowWidths[i];
-                break;
+        int randomRow = 0, randomCol = 0;
+        int cnt = 0;
+        do {
+            randomRow = UnityEngine.Random.Range(0, boardWidth);
+            randomCol = UnityEngine.Random.Range(0, MAX_WIDTH - wordLen + 1);
+            cnt++;
+            if (cnt > 100) {
+                Debug.LogError("Can not insert horizontallllllllllllllllllllllllllllllll");
+                return false;
+            }
+        } while (!IsValidRowToInsertWord(word, randomCol));
+        List<int> colHeights = GetColHeights();
+        int curWordIndex = 0;
+        for (int i = randomCol; i < randomCol + wordLen; i++) {
+            if (boardData[randomRow, i] == ' ') {
+                // Debug.Log("Col height: " + colHeights[i] + " curwordindex: " + curWordIndex + " word len: " + wordLen);
+                boardData[colHeights[i], i] = word[curWordIndex++];
+            } else {
+                MoveColUp(randomRow, i, colHeights[i]);
+                boardData[randomRow, i] = word[curWordIndex++];
             }
         }
-        if (rowWidth == null) 
-        {
-            Debug.Log("2 Cann't insert horizontal");
-            return false;
-        } 
-        int rowIndex = rowWidth.Item1;
-        int width = rowWidth.Item2;
-        int startIndex = rowWidth.Item3;
-        int positionToInsert = UnityEngine.Random.Range(startIndex, startIndex + width - wordLen + 1);
-        Debug.Log("Row index: " + rowIndex + " width: " + width + " startIndex" + startIndex);
-        Debug.Log("Position to insert: " + positionToInsert);
-        // insert word
-        for (int i = positionToInsert; i < positionToInsert + wordLen; i++)
-        {
-            if (boardData[rowIndex, i] != ' ')
-            {
-                MoveColUp(rowIndex, i);
+        return true;
+    }
+
+    bool IsValidRowToInsertWord(string word, int col) {
+        List<int> colHeights = GetColHeights();
+        for (int i = col; i < col + word.Length; i++) {
+            if (colHeights[i] == MAX_HEIGHT) {
+                return false;
             }
-            boardData[rowIndex, i] = word[i - positionToInsert];
         }
         return true;
     }
@@ -213,7 +249,7 @@ public class BoardDataGenerator2
     }
     public bool InsertVertical(string word)
     {
-        List<Tuple<int, int>> colHeights = GetColHeights();
+        List<int> colHeights = GetColHeights();
         int wordLen = word.Length;
 
         int rdValue = 0;
@@ -266,17 +302,17 @@ public class BoardDataGenerator2
         return boardHeight - notEmptyCellCnt;
     }
 
-    public void MoveColUp(int xPos, int yPos)
+    public void MoveColUp(int xPos, int yPos, int colHeight)
     {
-        int peakPos = xPos;
-        for (int i = xPos + 1; i < boardHeight; i++)
-        {
-            if (boardData[i, yPos] == ' ')
-            {
-                peakPos = i;
-                break;
-            }
-        }
+        int peakPos = colHeight;
+        // for (int i = xPos + 1; i < boardHeight; i++)
+        // {
+        //     if (boardData[i, yPos] == ' ')
+        //     {
+        //         peakPos = i;
+        //         break;
+        //     }
+        // }
         for (int i = peakPos; i > xPos; i--)
         {
             boardData[i, yPos] = boardData[i - 1, yPos];
@@ -349,9 +385,9 @@ public class BoardDataGenerator2
         }
         return widths;
     }
-    public List<Tuple<int, int>> GetColHeights()
+    public List<int> GetColHeights()
     {
-        List<Tuple<int, int>> heights = new List<Tuple<int, int>>();
+        List<int> heights = new List<int>();
         for (int i = 0; i < boardData.GetLength(1); i++)
         {
             int cnt = 0;
@@ -361,7 +397,8 @@ public class BoardDataGenerator2
                 if (boardData[j, i] != ' ') cnt++;
                 else break;
             }
-            heights.Add(Tuple.Create(i, cnt));
+            heights.Add(cnt);
+            // heights.Add(Tuple.Create(i, cnt));
         }
         return heights;
     }
