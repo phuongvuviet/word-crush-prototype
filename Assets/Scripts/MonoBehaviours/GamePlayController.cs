@@ -62,7 +62,7 @@ public class GamePlayController : MonoBehaviour
         if (boardUIController == null) Debug.Log("Board ui controller is null");
         string curAns = boardUIController.GetWord(startPosition, endPosition);
         if (curAns == null) Debug.Log("cur ans is null");
-        Debug.Log("answer count: " + answers.Count);
+        // Debug.Log("answer count: " + answers.Count);
         if (answers.Contains(curAns))
         {
             answersDisplayer.ShowAnswer(curAns);

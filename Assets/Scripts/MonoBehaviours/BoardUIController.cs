@@ -29,17 +29,10 @@ public class BoardUIController : MonoBehaviour
     public void Initialize(LevelData levelData)
     {
         data = levelData;
-
         boardDataGenerator = new BoardDataGenerator2(data);
         charBoard = boardDataGenerator.GenerateBoard();
-
-        // cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetMaxColHeight(), boardScreenWidth / boardDataGenerator.GetMaxCellWidth());
-        // Debug.Log($"{boardScreenHeight}/{boardDataGenerator.GetMaxColHeight()}  --- {boardScreenWidth} / {boardDataGenerator.GetMaxCellWidth()}");
-        // Debug.LogError("Cell size: " + cellSize);
         cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetBoardHeight(), boardScreenWidth / boardDataGenerator.GetBoardWidth());
-        Debug.LogError("Cell size: " + cellSize + "-" + (cellSize * boardDataGenerator.GetBoardWidth()) + "-" + boardScreenWidth);
         if (cellSize * boardDataGenerator.GetBoardWidth() < boardScreenWidth) {
-            Debug.LogError("in here");
             cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * boardDataGenerator.GetBoardWidth())) / 2.0f, cellParent.anchoredPosition.y); 
         }
 
@@ -53,14 +46,8 @@ public class BoardUIController : MonoBehaviour
         ClearUIBoard();
         boardDataGenerator = new BoardDataGenerator2(data);
         charBoard = boardDataGenerator.GenerateBoard();
-        // Debug.Log($"virtual: {boardDataGenerator.GetMaxCellWidth()}-{boardDataGenerator.GetMaxColHeight()} ---{boardDataGenerator.GetBoardWidth()}-{boardDataGenerator.GetBoardHeight()}");
-        // cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetMaxColHeight(), boardScreenWidth / boardDataGenerator.GetMaxCellWidth());
-        // Debug.Log($"{boardScreenHeight}/{boardDataGenerator.GetMaxColHeight()}  --- {boardScreenWidth} / {boardDataGenerator.GetMaxCellWidth()}");
-        // Debug.LogError("Cell size: " + cellSize);
         cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetBoardHeight(), boardScreenWidth / boardDataGenerator.GetBoardWidth());
-        Debug.LogError("Cell size: " + cellSize + "-" + (cellSize * boardDataGenerator.GetBoardWidth()) + "-" + boardScreenWidth);
         if (cellSize * boardDataGenerator.GetBoardWidth() < boardScreenWidth) {
-            Debug.LogError("in here");
             cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * boardDataGenerator.GetBoardWidth())) / 2.0f, cellParent.anchoredPosition.y); 
         } else {
             cellParent.anchoredPosition = new Vector2(0f, cellParent.anchoredPosition.y); 
@@ -120,7 +107,11 @@ public class BoardUIController : MonoBehaviour
         for (int i = 0; i < cellPositionsToChange.Count; i++)
         {
             Vector2Int pos = cellPositionsToChange[i];
-            uiBoard[pos.x, pos.y].ChangeColor(activeColor);
+            if (uiBoard[pos.x, pos.y]) {
+                uiBoard[pos.x, pos.y].ChangeColor(activeColor);
+            } else {
+                Debug.Log("ui board " + pos.x + " " + pos.y + " is null");
+            }
         }
     }
 

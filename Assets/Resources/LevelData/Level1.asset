@@ -15,9 +15,9 @@ MonoBehaviour:
   Words:
   - dog
   - cat
-  - ant
   - cow
-  - fish
+  - bird
+  - snack
   serializedBoardData:
     ROWS: 7
     COLS: 6

@@ -50,23 +50,21 @@ public class BoardDataGenerator2
         for (int i = 0; i < words.Count; i++)
         {
             string curWord = words[i];
-            int isReversed = UnityEngine.Random.Range(1, 101);
-            if (isReversed > 50) curWord = curWord.ReverseString(); 
-            // int rd = UnityEngine.Random.Range(0, 2);
-            int rd = 0;
+            int isReversed = UnityEngine.Random.Range(0, 2);
+            if (isReversed == 1) curWord = curWord.ReverseString(); 
+            int rd = UnityEngine.Random.Range(0, 2);
+            // InsertHorizontal(curWord);
+            // InsertVertical(curWord);
             if (rd == 0)
             {
-                // InsertVertical(curWord);
-                InsertHorizontal(curWord);
-
-                // if (!InsertVertical(words[i]))
-                // {
-                //     if (!InsertHorizontal(words[i]))
-                //     {
-                //         Debug.LogError("In hrere: " + boardWidth + " - " + boardHeight);
-                //         return GenerateBoard();
-                //     }
-                // } 
+                if (!InsertVertical(curWord))
+                {
+                    if (!InsertHorizontal(curWord))
+                    {
+                        Debug.LogError("In hrere: " + boardWidth + " - " + boardHeight);
+                        return GenerateBoard();
+                    }
+                } 
             } else
             {
                 if (!InsertHorizontal(curWord))
@@ -79,8 +77,8 @@ public class BoardDataGenerator2
                 } 
             }
         }
-        Debug.Log("---------------BOARD-------------------------");
-        Debug.Log(Show());
+        // Debug.Log("---------------BOARD-------------------------");
+        // Debug.Log(Show());
         boardData = RemoveEmptyColumnAndRow(boardData);
         boardWidth = boardData.GetLength(1);
         boardHeight = boardData.GetLength(0);
@@ -142,46 +140,6 @@ public class BoardDataGenerator2
 
     public bool InsertHorizontal(string word)
     {
-        // List<Tuple<int, int, int>> rowWidths = GetMaxWidthEachRow();
-        // Debug.Log("Row width length: " + rowWidths.Count);
-        // Shuffle(rowWidths);
-        // int wordLen = word.Length;
-        // Tuple<int,int,int> rowWidth = null;
-        // int maxColumnHeight = GetMaxColumnHeight();
-        // if (maxColumnHeight == boardHeight)
-        // {
-        //     Debug.Log("1 can not insert horizontal");
-        //     return false;
-        // } 
-        // for (int i = 0; i < rowWidths.Count; i++)
-        // {
-        //     if (wordLen <= rowWidths[i].Item2)
-        //     {
-        //         rowWidth = rowWidths[i];
-        //         break;
-        //     }
-        // }
-        // if (rowWidth == null) 
-        // {
-        //     Debug.Log("2 Cann't insert horizontal");
-        //     return false;
-        // } 
-        // int rowIndex = rowWidth.Item1;
-        // int width = rowWidth.Item2;
-        // int startIndex = rowWidth.Item3;
-        // int positionToInsert = UnityEngine.Random.Range(startIndex, startIndex + width - wordLen + 1);
-        // Debug.Log("Row index: " + rowIndex + " width: " + width + " startIndex" + startIndex);
-        // Debug.Log("Position to insert: " + positionToInsert);
-        // // insert word
-        // for (int i = positionToInsert; i < positionToInsert + wordLen; i++)
-        // {
-        //     if (boardData[rowIndex, i] != ' ')
-        //     {
-        //         MoveColUp(rowIndex, i);
-        //     }
-        //     boardData[rowIndex, i] = word[i - positionToInsert];
-        // }
-        // return true;
         int wordLen = word.Length;
         int randomRow = 0, randomCol = 0;
         int cnt = 0;
@@ -201,7 +159,7 @@ public class BoardDataGenerator2
                 // Debug.Log("Col height: " + colHeights[i] + " curwordindex: " + curWordIndex + " word len: " + wordLen);
                 boardData[colHeights[i], i] = word[curWordIndex++];
             } else {
-                MoveColUp(randomRow, i, colHeights[i]);
+                MoveColUp(randomRow, i, colHeights[i], 1);
                 boardData[randomRow, i] = word[curWordIndex++];
             }
         }
@@ -273,11 +231,14 @@ public class BoardDataGenerator2
             int numEmptyCells = GetNumEmptyCellsInCol(randomColIndex);
             int numFilledCells = boardHeight - numEmptyCells; 
             int startRowIndex = UnityEngine.Random.Range(0, numFilledCells + 1);
+            MoveColUp(startRowIndex, randomColIndex, GetColHeight(randomColIndex), wordLen);
+
             // move chars up
-            for (int i = startRowIndex; i <= numFilledCells - 1; i++)
-            {
-                boardData[i + wordLen, randomColIndex] = boardData[i, randomColIndex];
-            }
+            // for (int i = startRowIndex; i < MAX_HEIGHT; i++)
+            // {
+            //     boardData[i + wordLen, randomColIndex] = boardData[i, randomColIndex];
+            // }
+
             // fill cells
             for (int i = startRowIndex; i < startRowIndex + wordLen; i++)
             {
@@ -288,6 +249,14 @@ public class BoardDataGenerator2
         }
         return true;
     }
+    int GetColHeight(int col) {
+        int ans = 0;
+        for (int i = 0; i < MAX_HEIGHT; i++) {
+            if (boardData[i, col] == ' ') return ans;
+            else ans++;
+        }
+        return ans;
+    } 
     public int GetNumEmptyCellsInCol(int col)
     {
         int notEmptyCellCnt = 0;
@@ -302,22 +271,13 @@ public class BoardDataGenerator2
         return boardHeight - notEmptyCellCnt;
     }
 
-    public void MoveColUp(int xPos, int yPos, int colHeight)
+    public void MoveColUp(int xPos, int yPos, int colHeight, int step = 1)
     {
-        int peakPos = colHeight;
-        // for (int i = xPos + 1; i < boardHeight; i++)
-        // {
-        //     if (boardData[i, yPos] == ' ')
-        //     {
-        //         peakPos = i;
-        //         break;
-        //     }
-        // }
-        for (int i = peakPos; i > xPos; i--)
+        for (int i = colHeight - 1 + step; i >= xPos + step; i--)
         {
-            boardData[i, yPos] = boardData[i - 1, yPos];
+            boardData[i, yPos] = boardData[i - step, yPos];
         }
-        boardData[xPos, yPos] = ' ';
+        // boardData[xPos, yPos] = ' ';
     }
     public void MoveLeft(int xPos, int yPos)
     {
@@ -461,13 +421,13 @@ public class BoardDataGenerator2
         int numEmptyColumns = 0; 
         int numEmptyRows = board.GetLength(0) - GetMaxColHeight(); 
         string log = Show();
-        Debug.Log("--------------");
-        Debug.Log(log);
-        Debug.Log("--------------");
+        // Debug.Log("--------------");
+        // Debug.Log(log);
+        // Debug.Log("--------------");
         for (int i = 0; i < board.GetLength(1); i++) {
             if (board[0, i] == ' ') numEmptyColumns++;
         }
-        Debug.Log("empty row: " + numEmptyRows + " col: " + numEmptyColumns);
+        // Debug.Log("empty row: " + numEmptyRows + " col: " + numEmptyColumns);
         char[,] resBoard = new char[MAX_HEIGHT - numEmptyRows, MAX_WIDTH - numEmptyColumns]; 
         ResetData(resBoard);
         int curJ = 0, curI = 0;
@@ -486,14 +446,14 @@ public class BoardDataGenerator2
                 curJ++;
             }
         }
-        string log2 = "";
-        for (int i = 0; i < resBoard.GetLength(0); i++) {
-            for (int j = 0; j <resBoard.GetLength(1); j++) {
-                log2 += resBoard[i, j] + " ";
-            };
-            log2 += "\n";
-        }
-        Debug.Log(log2);
+        // string log2 = "";
+        // for (int i = 0; i < resBoard.GetLength(0); i++) {
+        //     for (int j = 0; j <resBoard.GetLength(1); j++) {
+        //         log2 += resBoard[i, j] + " ";
+        //     };
+        //     log2 += "\n";
+        // }
+        // Debug.Log(log2);
         return resBoard;
     }
     void ResetData(char[,] arr) {
