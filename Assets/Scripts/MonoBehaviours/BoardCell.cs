@@ -13,7 +13,7 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     float cellSize;
     float cellMargin;
     [SerializeField] Vector2Int positionInBoard;
-    char letter = ' ';
+    [SerializeField] char letter = ' ';
     bool isPointerDown = false;
 
     public void UpdateAnchoredPosition()
