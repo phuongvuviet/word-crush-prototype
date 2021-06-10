@@ -61,7 +61,7 @@ public class BoardDataGenerator2
                 {
                     if (!InsertHorizontal(curWord))
                     {
-                        Debug.LogError("In hrere: " + boardWidth + " - " + boardHeight);
+                        Debug.LogError("FAIL TO GENERATE BOARD");
                         return GenerateBoard();
                     }
                 } 
@@ -71,7 +71,7 @@ public class BoardDataGenerator2
                 {
                     if (!InsertVertical(curWord))
                     {
-                        Debug.LogError("In hrere: " + boardWidth + " - " + boardHeight);
+                        Debug.LogError("FAIL TO GENERATE BOARD");
                         return GenerateBoard();
                     }
                 } 

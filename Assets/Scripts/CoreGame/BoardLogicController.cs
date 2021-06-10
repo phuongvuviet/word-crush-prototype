@@ -50,7 +50,7 @@ public class BoardLogicController
                 }
             }
         }
-        Debug.Log(Show());
+        // Debug.Log(Show());
         return res;
     }
     public List<Vector2Int> GetVerticalAndHorizontalCellsFromCell(Vector2Int cellPos)
@@ -124,9 +124,13 @@ public class BoardLogicController
         // int stepIndex = 0;
         if (fromPosition.x == toPosition.x)
         {
-            for (int i = Mathf.Min(fromPosition.y, toPosition.y); i <= Mathf.Max(fromPosition.y, toPosition.y); i++)
-            {
+            int i = fromPosition.y; 
+            if (toPosition.y > i) toPosition.y++;
+            else toPosition.y--;
+            int cnt = 0;
+            while (i != toPosition.y) {
                 cellSteps.CellsToDeletes.Add(new Vector2Int(fromPosition.x, i));
+                board[fromPosition.x, i] = ' ';
                 bool hasCell = false;
                 for (int j = fromPosition.x; j < rows - 1; j++)
                 {
@@ -137,12 +141,15 @@ public class BoardLogicController
                         hasCell = true;
                         cellSteps.Steps.Add(new List<MoveInfo>());
                     } 
-                    // Debug.Log($"{j + 1}:{i} -> {j}{i}");
-
-                    // board[j, i] = board[j + 1, i];
-                    // board[j, i].SetPositionInBoard(new Vector2Int(j, i));
-                    // board[j + 1, i] = null;
+                    board[j, i] = board[j + 1, i];
+                    board[j + 1, i] = ' ';
                     cellSteps.Steps[cellSteps.Steps.Count - 1].Add(new MoveInfo(new Vector2Int(j + 1, i), new Vector2Int(j, i)));
+                }
+                if (fromPosition.y > toPosition.y) i--;
+                else i++;
+                cnt++;
+                if (cnt > 100) {
+                    Debug.LogError("Inside infinite looppppppppppppppppppppp");
                 }
             }
         } else
@@ -158,16 +165,20 @@ public class BoardLogicController
                 if (i <= upperX) {
                     // cellsToRemove.Add(board[i, commonY]);
                     cellSteps.CellsToDeletes.Add(new Vector2Int(i, commonY));
+                    board[i, commonY] = ' ';
                 }
                 if (i + gap < board.GetLength(0) && board[i + gap, commonY] != ' ')
                 {
                     // board[i, commonY] = board[i + gap, commonY];
                     // board[i, commonY].SetPositionInBoard(new Vector2Int(i, commonY));
                     cellSteps.Steps[cellSteps.Steps.Count - 1].Add(new MoveInfo(new Vector2Int(i + gap, commonY), new Vector2Int(i, commonY)));
+                    board[i, commonY] = board[i + gap, commonY];
+                    board[i + gap, commonY] = ' ';
                 } 
             }
             // Debug.Log("num cells to remove: " + cellsToRemove.Count);
         }
+        Debug.LogError(Show());
         return cellSteps;
     }
     public string Show()
@@ -179,20 +190,16 @@ public class BoardLogicController
             {
                 if (board[i, j] == ' ')
                 {
-                    //Console.Write('-');
                     ans += '-';
                 }
                 else
                 {
-                    //Console.Write(boardData[i, j]);
                     ans += board[i, j];
                 }
             }
-            //Console.WriteLine();
             ans += "\n";
         }
         ans += "----------------------------\n";
-        //Console.WriteLine("----------------------------");
         return ans;
     }
 }

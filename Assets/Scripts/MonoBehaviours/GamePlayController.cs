@@ -49,7 +49,7 @@ public class GamePlayController : MonoBehaviour
         endPosition = pos;
         boardUIController.ChangeCellsColor(startPosition, endPosition, true);
         wordPreviewer.SetWord(boardUIController.GetWord(startPosition, endPosition));
-        Debug.Log("start pos: " + startPosition + " end pos: " + endPosition);
+        // Debug.Log("start pos: " + startPosition + " end pos: " + endPosition);
     }
     
     public bool HasStartPosition()

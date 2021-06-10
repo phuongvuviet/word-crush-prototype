@@ -12,8 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d66785866a7ced846a4a9ed1f1dd7aaa, type: 3}
   m_Name: Level3
   m_EditorClassIdentifier: 
-  Words: []
+  Words:
+  - ant
+  - dog
+  - cat
+  - fish
+  - duck
   serializedBoardData:
-    ROWS: 0
-    COLS: 0
-    DataInside: []
+    ROWS: 7
+    COLS: 6
+    DataInside:
+    - row: 61007000700065006c002000
+    - row: 20006c006900200064002000
+    - row: 200061006700200075002000
+    - row: 20006e006500200063002000
+    - row: 200065006f0020006b002000
+    - row: 20006e006e00200020002000
+    - row: 200020006700200020002000
