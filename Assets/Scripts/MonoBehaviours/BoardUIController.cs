@@ -8,12 +8,12 @@ public class BoardUIController : MonoBehaviour
     [SerializeField] float cellMargin = 2f;
     LevelData data;
     BoardCell[,] uiBoard;
-    // char[,] charBoard;
+    char[,] charBoard;
     float boardScreenWidth, boardScreenHeight;
     RectTransform rectTrans;
     float cellSize;
     BoardLogicController boardController;
-    BoardDataGenerator2 boardDataGenerator;
+    BoardDataGenerator boardDataGenerator;
 
     private void Awake()
     {
@@ -21,16 +21,14 @@ public class BoardUIController : MonoBehaviour
         boardScreenWidth = rectTrans.rect.width;
         boardScreenHeight = rectTrans.rect.height;
     }
+    // private void Start() {
+    // }
 
-    private void Start() {
-        Debug.Log("Phuong");
-    }
-
-    public void Initialize(LevelData levelData)
+    public void Initialize(List<string> words)
     {
-        data = levelData;
-        boardDataGenerator = new BoardDataGenerator2(data);
-        char[,] charBoard = boardDataGenerator.GenerateBoard();
+        // data = levelData;
+        boardDataGenerator = new BoardDataGenerator(words);
+        charBoard = boardDataGenerator.GenerateBoard();
         cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetBoardHeight(), boardScreenWidth / boardDataGenerator.GetBoardWidth());
         if (cellSize * boardDataGenerator.GetBoardWidth() < boardScreenWidth) {
             cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * boardDataGenerator.GetBoardWidth())) / 2.0f, cellParent.anchoredPosition.y); 
@@ -39,11 +37,21 @@ public class BoardUIController : MonoBehaviour
         boardController = new BoardLogicController(charBoard);
         GenerateBoard(charBoard);
     }
-    public void ShuffleBoard(LevelData levelData)
+    public void Initialize(char[,] board) {
+        cellSize = Mathf.Min(boardScreenHeight / board.GetLength(0), boardScreenWidth / board.GetLength(1));
+        charBoard = board;
+        if (cellSize * board.GetLength(1) < boardScreenWidth) {
+            cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * board.GetLength(1))) / 2.0f, cellParent.anchoredPosition.y); 
+        }
+        uiBoard = new BoardCell[charBoard.GetLength(0), charBoard.GetLength(1)];
+        boardController = new BoardLogicController(charBoard);
+        GenerateBoard(charBoard);
+    }
+    public void ShuffleBoard(List<string> words)
     {
         ClearUIBoard();
-        boardDataGenerator = new BoardDataGenerator2(data);
-        char[,] charBoard = boardDataGenerator.GenerateBoard();
+        boardDataGenerator = new BoardDataGenerator(words);
+        charBoard = boardDataGenerator.GenerateBoard();
         cellSize = Mathf.Min(boardScreenHeight / boardDataGenerator.GetBoardHeight(), boardScreenWidth / boardDataGenerator.GetBoardWidth());
         if (cellSize * boardDataGenerator.GetBoardWidth() < boardScreenWidth) {
             cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * boardDataGenerator.GetBoardWidth())) / 2.0f, cellParent.anchoredPosition.y); 
@@ -71,7 +79,7 @@ public class BoardUIController : MonoBehaviour
         }
     }
 
-    void GenerateBoard(char[,] charBoard)
+    public void GenerateBoard(char[,] charBoard)
     {
         for (int i = 0; i < uiBoard.GetLength(0); i++)
         {
@@ -90,14 +98,16 @@ public class BoardUIController : MonoBehaviour
                     newCellRectTrans.pivot = Vector2.zero;
                     newCellRectTrans.anchoredPosition = new Vector2(j * cellSize, i * cellSize);
                     uiBoard[i, j] = newCell;
-                } 
+                } else {
+                    uiBoard[i, j] = null;
+                }
             }
         }
     }
 
     public void ChangeCellsColor(Vector2Int startPosition, Vector2Int endPosition, bool activeColor = true)
     {
-        List<Vector2Int> cellPositionsToChange = boardController.GetCellPositions(startPosition, endPosition); 
+        List<Vector2Int> cellPositionsToChange = boardController.GetAdjCellPositions(startPosition, endPosition); 
         if (!activeColor)
         {
             cellPositionsToChange.AddRange(boardController.GetVerticalAndHorizontalCellsFromCell(startPosition));
@@ -115,13 +125,12 @@ public class BoardUIController : MonoBehaviour
 
     public void RemoveCellsAndUpdateBoard(Vector2Int fromPosition, Vector2Int toPosition)
     {
-        CellSteps cellSteps = boardController.GetCellsToRemoveAndUpdateOtherCellsPosition(fromPosition, toPosition);
+        CellSteps cellSteps = boardController.RemoveCellsAndCollapseRows(fromPosition, toPosition);
         for (int i = 0; i < cellSteps.CellsToDeletes.Count; i++) {
             Vector2Int cellPos = cellSteps.CellsToDeletes[i];
-            Debug.Log(cellPos.x + " " + cellPos.y);
+            // Debug.Log(cellPos.x + " " + cellPos.y);
             Destroy(uiBoard[cellPos.x, cellPos.y].gameObject);
             uiBoard[cellPos.x, cellPos.y] = null;
-            // charBoard[cellPos.x, cellPos.y] = ' ';
         }
         for (int i = 0; i < cellSteps.Steps.Count; i++) {
             Vector2Int lastPos = new Vector2Int(-1, -1);
@@ -157,5 +166,8 @@ public class BoardUIController : MonoBehaviour
     public char GetLetter(int x, int y)
     {
         return uiBoard[x, y].GetLetter();
+    }
+    public char[,] GetBoardData() {
+        return charBoard;
     }
 }

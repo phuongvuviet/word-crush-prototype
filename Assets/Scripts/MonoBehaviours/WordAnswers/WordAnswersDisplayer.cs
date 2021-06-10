@@ -10,7 +10,10 @@ public class WordAnswersDisplayer : MonoBehaviour
 
     public void SetWordAnswers(List<string> words)
     {
-        //Debug.Log("word count: " + words.Count);
+        for (int i = 0; i < answers.Count; i++) {
+            Destroy(answers[i].gameObject);
+        }
+        answers.Clear();
         for (int i = 0; i < words.Count; i++)
         {
             WordAnswer answerInstance = Instantiate(answerPrefab, transform);
@@ -18,11 +21,26 @@ public class WordAnswersDisplayer : MonoBehaviour
             answers.Add(answerInstance);
         }
     }
-    public void ShowAnswer(string answer)
+    public void ShowAnswer(List<string> words) {
+        for (int i = 0; i < answers.Count; i++)
+        {
+            Debug.Log("word: " + answers[i].GetAnswer());
+            if (words.Contains(answers[i].GetAnswer())) {
+                Debug.Log("In show answer");
+                answers[i].Show();
+            }
+            // if (answers[i].GetAnswer() == answer)
+            // {
+            //     answers[i].Show();
+            //     break;
+            // }
+        }
+    }
+    public void ShowAnswer(string word)
     {
         for (int i = 0; i < answers.Count; i++)
         {
-            if (answers[i].GetAnswer() == answer)
+            if (answers[i].GetAnswer() == word)
             {
                 answers[i].Show();
                 break;

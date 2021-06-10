@@ -6,68 +6,68 @@ using UnityEngine;
 public class LevelData : ScriptableObject 
 {
     public List<string> Words = new List<string>();
-    public BoardData serializedBoardData;
+    // public BoardData serializedBoardData;
 
-    public bool ContainLetter(int x, int y)
-    {
-        return GetLetter(x, y) != ' '; 
-    }
-    public char GetLetter(int x, int y)
-    {
-        return serializedBoardData.GetLetter(x, y); //boardData[x, y] != ' ';
-    }
-    public int NumCols()
-    {
-        return serializedBoardData.COLS; 
-    }
-    public int NumRows()
-    {
-        return serializedBoardData.ROWS;
-    }
-    public void SetBoardData(char[,] boardData)
-    {
-        serializedBoardData = new BoardData(boardData.GetLength(0), boardData.GetLength(1));
-        for (int i = 0; i < serializedBoardData.ROWS; i++)
-        {
-            for (int j = 0; j < serializedBoardData.COLS; j++)
-            {
-                serializedBoardData.SetLetter(i, j, boardData[i,j]);
-            }
-        }
+    // public bool ContainLetter(int x, int y)
+    // {
+    //     return GetLetter(x, y) != ' '; 
+    // }
+    // public char GetLetter(int x, int y)
+    // {
+    //     return serializedBoardData.GetLetter(x, y); //boardData[x, y] != ' ';
+    // }
+    // public int NumCols()
+    // {
+    //     return serializedBoardData.COLS; 
+    // }
+    // public int NumRows()
+    // {
+    //     return serializedBoardData.ROWS;
+    // }
+    // public void SetBoardData(char[,] boardData)
+    // {
+    //     serializedBoardData = new BoardData(boardData.GetLength(0), boardData.GetLength(1));
+    //     for (int i = 0; i < serializedBoardData.ROWS; i++)
+    //     {
+    //         for (int j = 0; j < serializedBoardData.COLS; j++)
+    //         {
+    //             serializedBoardData.SetLetter(i, j, boardData[i,j]);
+    //         }
+    //     }
 
-    } 
-    public List<string> GetWords()
-    {
-        return Words;
-    }
-    public int GetNumWords()
-    {
-        return Words.Count;
-    }
-    public int GetMaxWordLength()
-    {
-        int maxLength = 0;
-        for (int i = 0; i < Words.Count; i++)
-        {
-            maxLength = Mathf.Max(maxLength, Words[i].Length);
-        }
-        return maxLength;
-    }
-    public int GetMinWordLength()
-    {
-        int minLength = 100;
-        for (int i = 0; i < Words.Count; i++)
-        {
-            minLength = Mathf.Max(minLength, Words[i].Length);
-        }
-        return minLength;
-    }
+    // } 
+    // public List<string> GetWords()
+    // {
+    //     return Words;
+    // }
+    // public int GetNumWords()
+    // {
+    //     return Words.Count;
+    // }
+    // public int GetMaxWordLength()
+    // {
+    //     int maxLength = 0;
+    //     for (int i = 0; i < Words.Count; i++)
+    //     {
+    //         maxLength = Mathf.Max(maxLength, Words[i].Length);
+    //     }
+    //     return maxLength;
+    // }
+    // public int GetMinWordLength()
+    // {
+    //     int minLength = 100;
+    //     for (int i = 0; i < Words.Count; i++)
+    //     {
+    //         minLength = Mathf.Max(minLength, Words[i].Length);
+    //     }
+    //     return minLength;
+    // }
 }
 
 [System.Serializable]
 public class BoardRowData
 {
-    public char[] row;
+    public char[] row = null;
     public BoardRowData(int num)
     {
         row = new char[num];
@@ -86,6 +86,7 @@ public class BoardData
 {
     public int ROWS, COLS;
     public List<BoardRowData> DataInside;
+    char[,] charBoard = null;
     public BoardData(int rows, int cols)
     {
         ROWS = rows;
@@ -96,6 +97,19 @@ public class BoardData
             DataInside.Add(new BoardRowData(cols));
         }
     }
+    public BoardData(char[,] charBoard) {
+        this.charBoard = charBoard;
+        ROWS = charBoard.GetLength(0);
+        COLS = charBoard.GetLength(1);
+        DataInside = new List<BoardRowData>();
+        for (int i = 0; i < ROWS; i++)
+        {
+            DataInside.Add(new BoardRowData(COLS));
+            for (int j = 0; j < COLS; j++) {
+                SetLetter(i, j, charBoard[i, j]);
+            }
+        }
+    }
     public void SetLetter(int x, int y, char letter)
     {
         DataInside[x].SetLetter(y, letter);
@@ -103,6 +117,17 @@ public class BoardData
     public char GetLetter(int x, int y)
     {
         return DataInside[x].GetLetter(y);
+    }
+    public char[,] GetCharBoard() {
+        if (charBoard == null) {
+            charBoard = new char[ROWS, COLS];
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLS; j++) {
+                    charBoard[i, j] = GetLetter(i, j);
+                }
+            }
+        }
+        return charBoard;
     }
 }
 

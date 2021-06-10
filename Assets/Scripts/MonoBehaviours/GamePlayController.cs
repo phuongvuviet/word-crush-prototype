@@ -1,18 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class GamePlayController : MonoBehaviour
 {
-    [SerializeField] LevelData data;
     [SerializeField] BoardUIController boardUIController;
     [SerializeField] WordPreviewer wordPreviewer;
     [SerializeField] WordAnswersDisplayer answersDisplayer; 
+    [SerializeField] GameObject winDialog; 
+    [SerializeField] TextMeshProUGUI levelTxt;
 
     public static GamePlayController Instance;
 
+    GameDataLoader dataLoader;
+    LevelData data;
     Vector2Int startPosition = Vector2Int.one * -1, endPosition = Vector2Int.one * -1;
-    List<string> answers;
+    List<string> targetWords;
+    List<string> solvedWords; 
     string curAns = "";
     bool isCurAnsWrong = false;
 
@@ -24,11 +29,34 @@ public class GamePlayController : MonoBehaviour
 
     private void Start()
     {
-        boardUIController.Initialize(data);
+        dataLoader = new GameDataLoader();
+        GameData gameData = dataLoader.LoadGameData();
+        if(gameData != null) {
+            targetWords = gameData.AllWords; 
+            solvedWords = gameData.SolvedWord;
+            boardUIController.Initialize(gameData.BoardData.GetCharBoard());
+            // Debug.Log("Solved words: " + targetWords.Count);
+            answersDisplayer.SetWordAnswers(targetWords);
+            // Debug.Log("Solved words: " + solvedWords.Count + " sovled: " + solvedWords[0]);
+            answersDisplayer.ShowAnswer(solvedWords);
+        } else {
+            LoadCurrentLevel();
+        }
         wordPreviewer.ResetText();
-        answers = data.GetWords();
-        answersDisplayer.SetWordAnswers(data.GetWords());
-
+        levelTxt.text = "LEVEL: " + Prefs.CurrentLevel;
+    }
+    public void LoadCurrentLevel() {
+        levelTxt.text = "LEVEL: " + Prefs.CurrentLevel;
+        data = dataLoader.LoadCurrentLevelData();
+        if (data == null) {
+            Prefs.CurrentLevel--;
+            data = dataLoader.LoadCurrentLevelData();
+        }
+        targetWords = data.Words;
+        solvedWords = new List<string>();
+        boardUIController.Initialize(targetWords);
+        answersDisplayer.SetWordAnswers(targetWords);
+        wordPreviewer.ResetText();
     }
     public void SetWordPosition(Vector2Int pos)
     {
@@ -60,14 +88,20 @@ public class GamePlayController : MonoBehaviour
     {
         if (endPosition == Vector2Int.one * -1) endPosition = startPosition;
 
-        if (boardUIController == null) Debug.Log("Board ui controller is null");
-        string curAns = boardUIController.GetWord(startPosition, endPosition);
-        if (curAns == null) Debug.Log("cur ans is null");
-        // Debug.Log("answer count: " + answers.Count);
-        if (answers.Contains(curAns))
+        string curWord = boardUIController.GetWord(startPosition, endPosition);
+        if (solvedWords.Contains(curWord)) {
+            Debug.Log(curWord + " is found");
+        }
+        else if (targetWords.Contains(curWord))
         {
-            answersDisplayer.ShowAnswer(curAns);
+            answersDisplayer.ShowAnswer(curWord);
             boardUIController.RemoveCellsAndUpdateBoard(startPosition, endPosition);
+            solvedWords.Add(curWord);
+            if (solvedWords.Count == targetWords.Count) {
+                Prefs.GameData = "";
+                Prefs.CurrentLevel++;
+                winDialog.SetActive(true);
+            }
         }
         else
         {
@@ -79,6 +113,21 @@ public class GamePlayController : MonoBehaviour
     }
     public void ShuffleBoard()
     {
-        boardUIController.ShuffleBoard(data);
+        List<string> remainingWords = new List<string>();
+        for (int i = 0; i < targetWords.Count; i++) {
+            if (!solvedWords.Contains(targetWords[i])) {
+                remainingWords.Add(targetWords[i]);
+            }
+        }
+        boardUIController.ShuffleBoard(remainingWords);
+    }
+    public void SaveGame() {
+        Debug.Log("Save gameeeeeeeeeeeeeeeeeeeeeeeeee");
+        char[,] board = boardUIController.GetBoardData(); 
+        dataLoader.SaveGameData(board, targetWords, solvedWords);
+    }
+    private void OnApplicationQuit() {
+        Debug.Log("On application quit");
+        SaveGame();
     }
 }

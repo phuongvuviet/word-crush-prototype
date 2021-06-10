@@ -21,6 +21,7 @@ public class WordAnswer : MonoBehaviour
     }
     public void Show()
     {
+        Debug.Log("Show answer: " + cells.Count);
         for (int i = 0; i < cells.Count; i++)
         {
             cells[i].Show();
