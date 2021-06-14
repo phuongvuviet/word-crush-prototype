@@ -447,30 +447,5 @@ public class BoardDataGenerator
             }
         }
     }
-//     List<Vector2Int> GetPossibleBoardSizes()
-//     {
-//         List<Vector2Int> sizes = new List<Vector2Int>();
-//         int maxWordLen = MaxWordLength(); 
-//         //int minWordLen = levelDataWrapper.GetMinWordLength();
-//         int wordArea = levelDataWrapper.GetWordsArea();
-//         for (int i = Mathf.Max(maxWordLen, MIN_WIDTH); i <= MAX_WIDTH; i++)
-//         {
-//             int height = (int)Mathf.Ceil(wordArea / (float)i);
-//             if (height < maxWordLen) height = maxWordLen;
-//             Debug.Log("I: " + i + " height: " + height);
-//             if (height >= Mathf.Max(maxWordLen, MIN_HEIGHT) && height <= MAX_HEIGHT)
-//             {
-//                 sizes.Add(new Vector2Int(i, height));
-//             }
-//         }
-//         return sizes;
-//     }
-//     int MaxWordLength() {
-//         int res = 0;
-//         for (int i = 0; i < words.Count; i++) {
-//             res = Mathf.Max(res, words[i].Length);
-//         }
-//         return res;
-//     }
 }
 

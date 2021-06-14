@@ -14,8 +14,7 @@ public class GameDataLoader
         }
         return levelData;
     }
-    public void SaveGameData(char[,] charBoard, List<string> allWords, List<string> solvedWords) {
-        GameData gameData = new GameData(charBoard, allWords, solvedWords);
+    public void SaveGameData(GameData gameData) {
         string gameDataJson = JsonUtility.ToJson(gameData);
         Debug.Log("game data json: " + gameDataJson);
         Prefs.GameData = gameDataJson; 

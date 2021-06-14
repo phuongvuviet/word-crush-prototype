@@ -33,8 +33,8 @@ public class GamePlayController : MonoBehaviour
         GameData gameData = dataLoader.LoadGameData();
         if(gameData != null) {
             targetWords = gameData.AllWords; 
-            solvedWords = gameData.SolvedWord;
-            boardUIController.Initialize(gameData.BoardData.GetCharBoard());
+            solvedWords = gameData.SolvedWords;
+            boardUIController.Initialize(gameData.BoardData.GetCharBoard(), targetWords);
             // Debug.Log("Solved words: " + targetWords.Count);
             answersDisplayer.SetWordAnswers(targetWords);
             // Debug.Log("Solved words: " + solvedWords.Count + " sovled: " + solvedWords[0]);
@@ -124,7 +124,8 @@ public class GamePlayController : MonoBehaviour
     public void SaveGame() {
         Debug.Log("Save gameeeeeeeeeeeeeeeeeeeeeeeeee");
         char[,] board = boardUIController.GetBoardData(); 
-        dataLoader.SaveGameData(board, targetWords, solvedWords);
+        GameData gameData = new GameData(board, targetWords, solvedWords);
+        dataLoader.SaveGameData(gameData);
     }
     private void OnApplicationQuit() {
         Debug.Log("On application quit");

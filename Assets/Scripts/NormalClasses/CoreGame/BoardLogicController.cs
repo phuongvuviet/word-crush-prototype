@@ -1,16 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class BoardLogicController 
 {
     char[,] board;
     int cols, rows;
-    public BoardLogicController(char[,] boardParam)
+    LevelDataWrapper levelDataWrapper;
+    public BoardLogicController(char[,] boardParam, List<string> words)
     {
         board = boardParam;
         cols = board.GetLength(1);
         rows = board.GetLength(0);
+        levelDataWrapper = new LevelDataWrapper(words); 
     }
     public char GetLetter(int x, int y)
     {
@@ -132,6 +135,7 @@ public class BoardLogicController
     }
     public CellSteps RemoveCellsAndCollapseRows(Vector2Int fromPosition, Vector2Int toPosition)
     {
+        // FindSuggestWordPosition();
         CellSteps cellSteps = new CellSteps();
         if (fromPosition.x == toPosition.x)
         {
@@ -191,6 +195,65 @@ public class BoardLogicController
         Debug.LogError(Show());
         return cellSteps;
     }
+    public void FindSuggestWordPosition(List<string> solvedWords) {
+        List<string> rowWords = new List<string>();
+        for (int i = 0; i < rows; i++) {
+            StringBuilder curStr = new StringBuilder();
+            for (int j = 0; j < cols; j++) {
+                if (board[i, j] != ' ') {
+                    curStr.Append(board[i, j]);
+                } else {
+                    if (curStr.Length > 0) {
+                        rowWords.Add(curStr.ToString());
+                        curStr.Clear();
+                    }
+                }
+            }
+            if (curStr.Length > 0) {
+                rowWords.Add(curStr.ToString());
+            }
+        }
+        List<string> colWords = new List<string>();
+        for (int j = 0; j < cols; j++) {
+            StringBuilder curStr = new StringBuilder();
+            for (int i = 0; i < rows; i++) {
+                if (board[i, j] != ' ') {
+                    // curStr += board[i, j];
+                    curStr.Append(board[i, j]);
+                } else {
+                    if (curStr.Length > 0) {
+                        colWords.Add(curStr.ToString());
+                        curStr.Clear();
+                        // Debug.Log("Cur str after clear: " + curStr.ToString());
+                    }
+                    break;
+                }
+            }
+            if (curStr.Length > 0) {
+                colWords.Add(curStr.ToString());
+            }
+        }
+        // words and reversed words
+        List<string> remainingWords = new List<string>();
+        List<string> allWords = new List<string>(); 
+        for (int i = 0; i < allWords.Count; i++) {
+            if (!solvedWords.Contains(allWords[i])) {
+                remainingWords.Add(allWords[i]);
+                remainingWords.Add(allWords[i].ReverseString());
+            }
+        };
+        // Debug.Log(Show());
+        // Debug.Log("row: " + rows + " cols: " + cols);
+        // Debug.Log("row worddddddddddddddddd: " + rowWords.Count);
+        // foreach (var word in rowWords) {
+        //     Debug.Log(word);
+        // }
+        // Debug.Log("-----------------");
+        // Debug.Log("col worddddddddddddddddd: " + colWords.Count);
+        // foreach (var word in colWords) {
+        //     Debug.Log(word);
+        // }
+    }
     public string Show()
     {
         string ans = "----------------------------\n";
@@ -213,3 +276,5 @@ public class BoardLogicController
         return ans;
     }
 }
+
+

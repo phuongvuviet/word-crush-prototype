@@ -4,22 +4,26 @@ using UnityEngine;
 
 public class LevelDataWrapper 
 {
-    LevelData levelData;
+    // LevelData levelData;
     int maxWordLength = 0;
     int minWordLength = 100;
     int wordsArea = 0;
+    List<string> words;
     public LevelDataWrapper(LevelData levelData)
     {
-        this.levelData = levelData;
+        words = levelData.Words;
+    }
+    public LevelDataWrapper(List<string> words) {
+        this.words = words;
     }
 
     public int GetMaxWordLength()
     {
         if (maxWordLength == 0)
         {
-            for (int i = 0; i < levelData.Words.Count; i++)
+            for (int i = 0; i < words.Count; i++)
             {
-                maxWordLength = Mathf.Max(maxWordLength, levelData.Words[i].Length);
+                maxWordLength = Mathf.Max(maxWordLength, words[i].Length);
             }
         } 
         return maxWordLength;
@@ -28,9 +32,9 @@ public class LevelDataWrapper
     {
         if (minWordLength == 100)
         {
-            for (int i = 0; i < levelData.Words.Count; i++)
+            for (int i = 0; i < words.Count; i++)
             {
-                minWordLength = Mathf.Min(maxWordLength, levelData.Words[i].Length);
+                minWordLength = Mathf.Min(maxWordLength, words[i].Length);
             }
         } 
         return maxWordLength;
@@ -40,15 +44,18 @@ public class LevelDataWrapper
     {
         if (wordsArea == 0)
         {
-            for (int i = 0; i < levelData.Words.Count; i++)
+            for (int i = 0; i < words.Count; i++)
             {
-                wordsArea += levelData.Words[i].Length;
+                wordsArea += words[i].Length;
             }
         }
         return wordsArea;
     }
     public int Count()
     {
-        return levelData.Words.Count;
+        return words.Count;
+    }
+    public List<string> GetWords() {
+        return words;
     }
 }
