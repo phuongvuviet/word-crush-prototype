@@ -6,11 +6,11 @@ using UnityEngine;
 public class GameData
 {
     public BoardData BoardData; 
-    public List<string> SolvedWord;
+    public List<string> SolvedWords;
     public List<string> AllWords;
-    public GameData(char[,] board, List<string> allWords, List<string> solvedWord) {
+    public GameData(char[,] board, List<string> allWords, List<string> solvedWords) {
         BoardData = new BoardData(board);
-        SolvedWord = solvedWord;
+        SolvedWords = solvedWords;
         AllWords = allWords;
     }
 }

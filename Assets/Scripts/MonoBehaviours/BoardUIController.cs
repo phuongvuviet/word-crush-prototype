@@ -34,17 +34,17 @@ public class BoardUIController : MonoBehaviour
             cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * boardDataGenerator.GetBoardWidth())) / 2.0f, cellParent.anchoredPosition.y); 
         }
         uiBoard = new BoardCell[charBoard.GetLength(0), charBoard.GetLength(1)];
-        boardController = new BoardLogicController(charBoard);
+        boardController = new BoardLogicController(charBoard, words);
         GenerateBoard(charBoard);
     }
-    public void Initialize(char[,] board) {
+    public void Initialize(char[,] board, List<string> words) {
         cellSize = Mathf.Min(boardScreenHeight / board.GetLength(0), boardScreenWidth / board.GetLength(1));
         charBoard = board;
         if (cellSize * board.GetLength(1) < boardScreenWidth) {
             cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * board.GetLength(1))) / 2.0f, cellParent.anchoredPosition.y); 
         }
         uiBoard = new BoardCell[charBoard.GetLength(0), charBoard.GetLength(1)];
-        boardController = new BoardLogicController(charBoard);
+        boardController = new BoardLogicController(charBoard, words);
         GenerateBoard(charBoard);
     }
     public void ShuffleBoard(List<string> words)
@@ -60,7 +60,7 @@ public class BoardUIController : MonoBehaviour
         }
 
         uiBoard = new BoardCell[charBoard.GetLength(0), charBoard.GetLength(1)];
-        boardController = new BoardLogicController(charBoard);
+        boardController = new BoardLogicController(charBoard, words);
         GenerateBoard(charBoard);
     }
 
