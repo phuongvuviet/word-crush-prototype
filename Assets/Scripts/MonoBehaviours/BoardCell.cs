@@ -16,11 +16,20 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     [SerializeField] char letter = ' ';
     bool isPointerDown = false;
     BoardCellState curState = BoardCellState.NORMAL;
+    bool isHinted = false;
+    public bool IsHinted{
+        get{
+            return isHinted;
+        }
+        set {
+            isHinted = value;
+            bgImage.color = hintColor;
+        }
+    }
 
     public enum BoardCellState{
         NORMAL,
-        ACTIVE,
-        HINT
+        ACTIVE
     }
 
     public void UpdateAnchoredPosition()
@@ -62,15 +71,11 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
                 bgImage.color = activeColor;
                 break;
             case BoardCellState.NORMAL:
-                if (curState == BoardCellState.HINT) {
+                if (IsHinted) {
                     bgImage.color = hintColor;
                 } else {
                     bgImage.color = normalColor;
                 }
-                break;
-            case BoardCellState.HINT:
-                bgImage.color = hintColor;
-                Debug.Log("Set bg image to hint colot");
                 break;
         }
         this.curState = state;
@@ -82,7 +87,7 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         if (GameController.Instance.HasStartPosition())
         {
-            GameController.Instance.SetWordPosition(positionInBoard);
+            GameController.Instance.SetInputCellPosition(positionInBoard);
         } 
     }
 
@@ -90,7 +95,7 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         if (!GameController.Instance.HasStartPosition())
         {
-            GameController.Instance.SetWordPosition(positionInBoard);
+            GameController.Instance.SetInputCellPosition(positionInBoard);
         }
     }
 

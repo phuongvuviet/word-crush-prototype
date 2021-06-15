@@ -12,8 +12,8 @@ public static class Prefs
         get { return PlayerPrefs.GetString("game_data", ""); }
         set { PlayerPrefs.SetString("game_data", value); }
     }
-    // public static string CurrentBoardData {
-    //     get { return PlayerPrefs.GetString("current_board_data", ""); }
-    //     set { PlayerPrefs.SetString("current_board_data", value); }
-    // } 
+    public static bool HasSessionData{
+        get { return PlayerPrefs.GetInt("session_data", 0) == 1 ? true : false; }
+        set { PlayerPrefs.SetInt("session_data", value ? 1 : 0); }
+    }
 }

@@ -18,9 +18,10 @@ public class HintWordInfo
         Word = word;
         Position = position;
         Direction = direction;
+        CurrentIndex = 0;
     }
     public Vector2Int GetNextCharPosition() {
-        Debug.Log("Word: " + Word + " start pos: " + Position  + " direction: " + Direction + " index: " + CurrentIndex);
+        // Debug.Log("Word: " + Word + " start pos: " + Position  + " direction: " + Direction + " index: " + CurrentIndex);
         Vector2Int res = Position + Direction * CurrentIndex;
         CurrentIndex++;
         return res;
@@ -35,6 +36,6 @@ public class HintWordInfo
         return CurrentIndex == Word.Length;
     }
     public override string ToString() {
-        return $"Word: {Word} - Pos: {Position} - Direction: {Direction}";
+        return $"Word: {Word} - Pos: {Position} - Direction: {Direction} - Index: {CurrentIndex}";
     }
 }
