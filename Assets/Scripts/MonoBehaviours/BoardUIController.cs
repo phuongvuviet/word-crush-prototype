@@ -122,6 +122,9 @@ public class BoardUIController : MonoBehaviour
             }
         }
     }
+    public void ChangeCellState(Vector2Int position, BoardCell.BoardCellState state) {
+        uiBoard[position.x, position.y].SetState(state);
+    }
 
     public void RemoveCellsAndUpdateBoard(Vector2Int fromPosition, Vector2Int toPosition)
     {

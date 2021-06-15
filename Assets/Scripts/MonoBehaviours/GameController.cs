@@ -22,7 +22,7 @@ public class GameController : MonoBehaviour
     string curAns = "";
     bool isCurAnsWrong = false;
     HintWordInfo hintWordInfo = null;
-
+    BoardLogicController boardLogic = null;
     private void Awake()
     {
         Input.multiTouchEnabled = false;
@@ -30,7 +30,7 @@ public class GameController : MonoBehaviour
     }
 
     private void Start()
-    {
+    { 
         dataLoader = new GameDataLoader();
         GameData gameData = dataLoader.LoadGameData();
         if(gameData != null) {
@@ -46,6 +46,7 @@ public class GameController : MonoBehaviour
         }
         wordPreviewer.ResetText();
         levelTxt.text = "LEVEL: " + Prefs.CurrentLevel;
+        boardLogic = new BoardLogicController(boardUIController.GetCharBoard(), targetWords);
     }
     public void LoadCurrentLevel() {
         levelTxt.text = "LEVEL: " + Prefs.CurrentLevel;
@@ -134,6 +135,15 @@ public class GameController : MonoBehaviour
         // BoardLogicController boardLogic = new BoardLogicController(boardUIController.GetCharBoard(), targetWords);
         // hintWordInfo = boardLogic.FindCorrectWordPosition(solvedWords); 
         // Debug.Log(hintWordInfo.ToString());
+        if (!boardLogic.IsHintWordCompleted(solvedWords)) {
+            Vector2Int hintPosition = boardLogic.GetHintPosition(solvedWords);
+            Debug.LogError("Hint position: " + hintPosition);
+            if (hintPosition != Vector2Int.one * -1) {
+                boardUIController.ChangeCellState(hintPosition, BoardCell.BoardCellState.HINT);
+            }
+        } else {
+            Debug.LogError("Final hint");
+        }
     }
 
     private void OnApplicationQuit() {

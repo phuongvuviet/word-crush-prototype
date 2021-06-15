@@ -20,6 +20,7 @@ public class HintWordInfo
         Direction = direction;
     }
     public Vector2Int GetNextCharPosition() {
+        Debug.Log("Word: " + Word + " start pos: " + Position  + " direction: " + Direction + " index: " + CurrentIndex);
         Vector2Int res = Position + Direction * CurrentIndex;
         CurrentIndex++;
         return res;

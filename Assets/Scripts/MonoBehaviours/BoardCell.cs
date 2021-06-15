@@ -70,22 +70,13 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
                 break;
             case BoardCellState.HINT:
                 bgImage.color = hintColor;
+                Debug.Log("Set bg image to hint colot");
                 break;
         }
         this.curState = state;
     }
     public BoardCellState GetState() {
         return curState;
-    }
-    public void ChangeColor(bool useActiveColor)
-    {
-        if (useActiveColor)
-        {
-            bgImage.color = activeColor;
-        } else
-        {
-            bgImage.color = normalColor;
-        }
     }
     public void OnPointerEnter(PointerEventData eventData)
     {
