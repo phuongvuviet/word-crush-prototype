@@ -105,10 +105,10 @@ public class BoardUIController : MonoBehaviour
         }
     }
 
-    public void ChangeCellsColor(Vector2Int startPosition, Vector2Int endPosition, bool activeColor = true)
+    public void ChangeCellsState(Vector2Int startPosition, Vector2Int endPosition, BoardCell.BoardCellState state)
     {
         List<Vector2Int> cellPositionsToChange = boardController.GetAdjCellPositions(startPosition, endPosition); 
-        if (!activeColor)
+        if (state == BoardCell.BoardCellState.NORMAL)
         {
             cellPositionsToChange.AddRange(boardController.GetVerticalAndHorizontalCellsFromCell(startPosition));
         }
@@ -116,7 +116,7 @@ public class BoardUIController : MonoBehaviour
         {
             Vector2Int pos = cellPositionsToChange[i];
             if (uiBoard[pos.x, pos.y]) {
-                uiBoard[pos.x, pos.y].ChangeColor(activeColor);
+                uiBoard[pos.x, pos.y].SetState(state);
             } else {
                 // Debug.Log("ui board " + pos.x + " " + pos.y + " is null");
             }
@@ -167,7 +167,7 @@ public class BoardUIController : MonoBehaviour
     {
         return uiBoard[x, y].GetLetter();
     }
-    public char[,] GetBoardData() {
+    public char[,] GetCharBoard() {
         return charBoard;
     }
 }

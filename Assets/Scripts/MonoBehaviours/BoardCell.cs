@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler 
 {
     [SerializeField] Text letterText;
-    [SerializeField] Color activeColor, normalColor;
+    [SerializeField] Color activeColor, normalColor, hintColor;
     [SerializeField] Image bgImage;
 
     float cellSize;
@@ -15,6 +15,13 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     [SerializeField] Vector2Int positionInBoard;
     [SerializeField] char letter = ' ';
     bool isPointerDown = false;
+    BoardCellState curState = BoardCellState.NORMAL;
+
+    public enum BoardCellState{
+        NORMAL,
+        ACTIVE,
+        HINT
+    }
 
     public void UpdateAnchoredPosition()
     {
@@ -47,6 +54,29 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
         GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellSize - cellMargin);
         GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellSize - cellMargin);
     }
+    public void SetState(BoardCellState state) {
+        // this.curState = state;
+        switch (state)
+        {   
+            case BoardCellState.ACTIVE:
+                bgImage.color = activeColor;
+                break;
+            case BoardCellState.NORMAL:
+                if (curState == BoardCellState.HINT) {
+                    bgImage.color = hintColor;
+                } else {
+                    bgImage.color = normalColor;
+                }
+                break;
+            case BoardCellState.HINT:
+                bgImage.color = hintColor;
+                break;
+        }
+        this.curState = state;
+    }
+    public BoardCellState GetState() {
+        return curState;
+    }
     public void ChangeColor(bool useActiveColor)
     {
         if (useActiveColor)
@@ -57,25 +87,24 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
             bgImage.color = normalColor;
         }
     }
-
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (GamePlayController.Instance.HasStartPosition())
+        if (GameController.Instance.HasStartPosition())
         {
-            GamePlayController.Instance.SetWordPosition(positionInBoard);
+            GameController.Instance.SetWordPosition(positionInBoard);
         } 
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (!GamePlayController.Instance.HasStartPosition())
+        if (!GameController.Instance.HasStartPosition())
         {
-            GamePlayController.Instance.SetWordPosition(positionInBoard);
+            GameController.Instance.SetWordPosition(positionInBoard);
         }
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        GamePlayController.Instance.CheckWord();
+        GameController.Instance.CheckWord();
     }
 }

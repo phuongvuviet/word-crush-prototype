@@ -169,4 +169,7 @@ MonoBehaviour:
   letterText: {fileID: 1091419878828649006}
   activeColor: {r: 0.10984874, g: 1, b: 0, a: 1}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
+  hintColor: {r: 1, g: 0.3443396, b: 0.3443396, a: 0}
   bgImage: {fileID: 1091419879109350697}
+  positionInBoard: {x: 0, y: 0}
+  letter: 32

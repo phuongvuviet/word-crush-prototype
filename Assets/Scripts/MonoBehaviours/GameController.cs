@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class GamePlayController : MonoBehaviour
+public class GameController : MonoBehaviour
 {
     [SerializeField] BoardUIController boardUIController;
     [SerializeField] WordPreviewer wordPreviewer;
@@ -11,7 +12,7 @@ public class GamePlayController : MonoBehaviour
     [SerializeField] GameObject winDialog; 
     [SerializeField] TextMeshProUGUI levelTxt;
 
-    public static GamePlayController Instance;
+    public static GameController Instance;
 
     GameDataLoader dataLoader;
     LevelData data;
@@ -20,6 +21,7 @@ public class GamePlayController : MonoBehaviour
     List<string> solvedWords; 
     string curAns = "";
     bool isCurAnsWrong = false;
+    HintWordInfo hintWordInfo = null;
 
     private void Awake()
     {
@@ -64,7 +66,7 @@ public class GamePlayController : MonoBehaviour
         {
             startPosition = pos;
             wordPreviewer.SetWord(boardUIController.GetLetter(pos.x, pos.y).ToString());
-            boardUIController.ChangeCellsColor(startPosition, startPosition);
+            boardUIController.ChangeCellsState(startPosition, startPosition, BoardCell.BoardCellState.ACTIVE);
         } else
         {
             SetEndPostion(pos);
@@ -73,9 +75,9 @@ public class GamePlayController : MonoBehaviour
 
     public void SetEndPostion(Vector2Int pos)
     {
-        boardUIController.ChangeCellsColor(startPosition, endPosition, false);
+        boardUIController.ChangeCellsState(startPosition, endPosition, BoardCell.BoardCellState.NORMAL);
         endPosition = pos;
-        boardUIController.ChangeCellsColor(startPosition, endPosition, true);
+        boardUIController.ChangeCellsState(startPosition, endPosition, BoardCell.BoardCellState.ACTIVE);
         wordPreviewer.SetWord(boardUIController.GetWord(startPosition, endPosition));
         // Debug.Log("start pos: " + startPosition + " end pos: " + endPosition);
     }
@@ -105,7 +107,7 @@ public class GamePlayController : MonoBehaviour
         }
         else
         {
-            boardUIController.ChangeCellsColor(startPosition, endPosition, false);
+            boardUIController.ChangeCellsState(startPosition, endPosition, BoardCell.BoardCellState.NORMAL);
         }
         startPosition = Vector2Int.one * -1;
         endPosition = Vector2Int.one * -1;
@@ -121,14 +123,27 @@ public class GamePlayController : MonoBehaviour
         }
         boardUIController.ShuffleBoard(remainingWords);
     }
-    public void SaveGame() {
-        Debug.Log("Save gameeeeeeeeeeeeeeeeeeeeeeeeee");
-        char[,] board = boardUIController.GetBoardData(); 
-        GameData gameData = new GameData(board, targetWords, solvedWords);
-        dataLoader.SaveGameData(gameData);
+    public void Hint() {
+        // if (hintWordInfo == null) {
+        //     BoardLogicController boardLogic = new BoardLogicController(boardUIController.GetCharBoard(), targetWords);
+        //     hintWordInfo = boardLogic.FindCorrectWordPosition(solvedWords); 
+        // } else {
+        //     Debug.Log(hintWordInfo.ToString());
+        // }
+
+        // BoardLogicController boardLogic = new BoardLogicController(boardUIController.GetCharBoard(), targetWords);
+        // hintWordInfo = boardLogic.FindCorrectWordPosition(solvedWords); 
+        // Debug.Log(hintWordInfo.ToString());
     }
+
     private void OnApplicationQuit() {
         Debug.Log("On application quit");
         SaveGame();
+    }
+    public void SaveGame() {
+        Debug.Log("Save gameeeeeeeeeeeeeeeeeeeeeeeeee");
+        char[,] board = boardUIController.GetCharBoard(); 
+        GameData gameData = new GameData(board, targetWords, solvedWords);
+        dataLoader.SaveGameData(gameData);
     }
 }

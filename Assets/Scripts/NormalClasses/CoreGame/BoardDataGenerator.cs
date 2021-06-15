@@ -42,7 +42,7 @@ public class BoardDataGenerator
         {
             string curWord = words[i];
             int isReversed = UnityEngine.Random.Range(0, 2);
-            if (isReversed == 1) curWord = curWord.ReverseString(); 
+            if (isReversed == 1) curWord = curWord.Reversed(); 
             int rd = UnityEngine.Random.Range(0, 2);
             // InsertHorizontal(curWord);
             // InsertVertical(curWord);

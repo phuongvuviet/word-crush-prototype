@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -8,6 +9,7 @@ public class BoardLogicController
     char[,] board;
     int cols, rows;
     LevelDataWrapper levelDataWrapper;
+    HintWordInfo hintWordInfo = null;
     public BoardLogicController(char[,] boardParam, List<string> words)
     {
         board = boardParam;
@@ -195,66 +197,116 @@ public class BoardLogicController
         Debug.LogError(Show());
         return cellSteps;
     }
-    public void FindSuggestWordPosition(List<string> solvedWords) {
+
+    public Vector2Int GetHintPosition(List<string> solvedWords) {
+        if (hintWordInfo == null) {
+            hintWordInfo = FindHintWord(solvedWords);
+        }
+        if (hintWordInfo == null) return Vector2Int.one * -1;
+        return hintWordInfo.GetNextCharPosition();
+    } 
+
+    public bool IsHintWordCompleted() {
+        if (hintWordInfo == null) return true;
+        return hintWordInfo.IsCompleted();
+    }
+
+    HintWordInfo FindHintWord(List<string> solvedWords) {
+        List<string> remainingWords = new List<string>();
+        List<string> reversedRemainingWords = new List<string>();
         List<string> rowWords = new List<string>();
+        StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < rows; i++) {
-            StringBuilder curStr = new StringBuilder();
             for (int j = 0; j < cols; j++) {
-                if (board[i, j] != ' ') {
-                    curStr.Append(board[i, j]);
-                } else {
-                    if (curStr.Length > 0) {
-                        rowWords.Add(curStr.ToString());
-                        curStr.Clear();
-                    }
-                }
+                stringBuilder.Append(board[i, j]);
             }
-            if (curStr.Length > 0) {
-                rowWords.Add(curStr.ToString());
-            }
+            rowWords.Add(stringBuilder.ToString());
+            stringBuilder.Clear();
         }
         List<string> colWords = new List<string>();
         for (int j = 0; j < cols; j++) {
-            StringBuilder curStr = new StringBuilder();
             for (int i = 0; i < rows; i++) {
-                if (board[i, j] != ' ') {
-                    // curStr += board[i, j];
-                    curStr.Append(board[i, j]);
-                } else {
-                    if (curStr.Length > 0) {
-                        colWords.Add(curStr.ToString());
-                        curStr.Clear();
-                        // Debug.Log("Cur str after clear: " + curStr.ToString());
-                    }
-                    break;
-                }
+                stringBuilder.Append(board[i, j]);
             }
-            if (curStr.Length > 0) {
-                colWords.Add(curStr.ToString());
-            }
+            colWords.Add(stringBuilder.ToString());
+            stringBuilder.Clear();
         }
         // words and reversed words
-        List<string> remainingWords = new List<string>();
-        List<string> allWords = new List<string>(); 
+        List<string> allWords = levelDataWrapper.GetWords(); 
         for (int i = 0; i < allWords.Count; i++) {
             if (!solvedWords.Contains(allWords[i])) {
                 remainingWords.Add(allWords[i]);
-                remainingWords.Add(allWords[i].ReverseString());
+                reversedRemainingWords.Add(allWords[i].Reversed());
             }
         };
-        // Debug.Log(Show());
-        // Debug.Log("row: " + rows + " cols: " + cols);
-        // Debug.Log("row worddddddddddddddddd: " + rowWords.Count);
-        // foreach (var word in rowWords) {
-        //     Debug.Log(word);
-        // }
-        // Debug.Log("-----------------");
-        // Debug.Log("col worddddddddddddddddd: " + colWords.Count);
-        // foreach (var word in colWords) {
-        //     Debug.Log(word);
-        // }
+        Debug.Log("Remaing word");
+        for (int i = 0; i < remainingWords.Count; i++) {
+            Debug.Log(remainingWords[i]);
+        }
+        Debug.Log("---------------------------------");
+        HintWordInfo res = new HintWordInfo();
+        bool hasRes = false;
+        for (int i = 0; i < rowWords.Count; i++) {
+            if (hasRes) break;
+            for (int j = 0; j < remainingWords.Count; j++) {
+                int index = rowWords[i].IndexOf(remainingWords[j]);
+                if (index != -1) {
+                    Debug.LogError("row word: " + rowWords[i] + " remaining: " + remainingWords[j]);
+                    res.Position = new Vector2Int(i, index);
+                    res.Word = remainingWords[j];
+                    res.Direction = Vector2Int.right;
+                    hasRes = true;
+                    break;
+                } else {
+                    index = rowWords[i].IndexOf(reversedRemainingWords[j]);
+                    if (index != -1) {
+                        res.Position = new Vector2Int(i, index + reversedRemainingWords[j].Length - 1);
+                        res.Word = reversedRemainingWords[j].Reversed();
+                        res.Direction = Vector2Int.left;
+                        hasRes = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!hasRes) {
+            for (int i = 0; i < colWords.Count; i++) {
+                if (hasRes) break;
+                for (int j = 0; j < remainingWords.Count; j++) {
+                    int index = colWords[i].IndexOf(remainingWords[j]);
+                    if (index != -1) {
+                        res.Position = new Vector2Int(i, index);
+                        res.Word = remainingWords[i];
+                        res.Direction = Vector2Int.up;
+                        hasRes = true;
+                        break;
+                    } else {
+                        index = colWords[i].IndexOf(reversedRemainingWords[j]);
+                        if (index != -1) {
+                            res.Position = new Vector2Int(i, index + reversedRemainingWords[j].Length - 1);
+                            res.Word = reversedRemainingWords[j].Reversed();
+                            res.Direction = Vector2Int.down;
+                            hasRes = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        Debug.Log("row worddddddddddddddddd: " + rowWords.Count);
+        foreach (var word in rowWords) {
+            Debug.Log(word);
+        }
+        Debug.Log("-----------------");
+        Debug.Log("col worddddddddddddddddd: " + colWords.Count);
+        foreach (var word in colWords) {
+            Debug.Log(word);
+        }
+        if (hasRes) return res;
+        Debug.Log("Can not find hint wordddddddddddddddddddddddd");
+        return null;
     }
-    public string Show()
+    string Show()
     {
         string ans = "----------------------------\n";
         for (int i = board.GetLength(0) - 1; i >= 0; i--)
@@ -276,5 +328,3 @@ public class BoardLogicController
         return ans;
     }
 }
-
-
