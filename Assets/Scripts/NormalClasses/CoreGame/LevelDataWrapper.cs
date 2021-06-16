@@ -34,10 +34,10 @@ public class LevelDataWrapper
         {
             for (int i = 0; i < words.Count; i++)
             {
-                minWordLength = Mathf.Min(maxWordLength, words[i].Length);
+                minWordLength = Mathf.Min(minWordLength, words[i].Length);
             }
         } 
-        return maxWordLength;
+        return minWordLength;
     }
 
     public int GetWordsArea()

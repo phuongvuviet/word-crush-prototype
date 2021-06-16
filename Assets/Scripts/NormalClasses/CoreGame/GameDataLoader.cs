@@ -5,29 +5,43 @@ using UnityEngine;
 public class GameDataLoader  
 {
     const string levelDataPath = "LevelData/Level";
-    public LevelData LoadCurrentLevelData() {
+    public void SaveGameData(GameSessionData gameData) {
+        string gameDataJson = JsonUtility.ToJson(gameData);
+        Prefs.GameData = gameDataJson; 
+    }
+    public GameSessionData LoadGameData() {
+        GameSessionData gameData = null;
+        if (Prefs.HasSessionData) {
+            string gameDataJson = Prefs.GameData;
+            // Debug.Log("Game data json: " + gameDataJson);
+            if (gameDataJson != "") {
+                gameData = JsonUtility.FromJson<GameSessionData>(gameDataJson);
+                if (gameData == null) {
+                    Debug.Log("Can not convert game data json to game data");
+                } else {
+                    if (gameData.LevelData == null) {
+                        Debug.LogError("Impossibleeeeeeeeeeeeeeeeeeeeeee");
+                    }
+                }
+            } else {
+                Debug.Log("[GameDataLaoder] can not load game session data");
+            } 
+        } else {
+            // Debug.LogError("2");
+            LevelData curLevelData = LoadCurrentLevelData();
+            if (curLevelData == null) {
+                Debug.LogError("Level data is null");
+            }
+            gameData = new GameSessionData(curLevelData, new char[1,1], new List<string>(), null);
+        }
+        return gameData;
+    } 
+    LevelData LoadCurrentLevelData() {
         int currentLevel = Prefs.CurrentLevel;
-        Debug.Log("Current level: " + currentLevel);
         LevelData levelData = Resources.Load<LevelData>(levelDataPath + currentLevel);
         if (levelData == null) {
             Debug.Log("Fail to load level data: " + currentLevel);
         }
         return levelData;
     }
-    public void SaveGameData(GameData gameData) {
-        string gameDataJson = JsonUtility.ToJson(gameData);
-        Debug.Log("game data json: " + gameDataJson);
-        Prefs.GameData = gameDataJson; 
-    }
-    public GameData LoadGameData() {
-        string gameDataJson = Prefs.GameData;
-        GameData gameData = null;
-        if (gameDataJson != "") {
-            gameData = JsonUtility.FromJson<GameData>(gameDataJson);
-            if (gameData == null) {
-                Debug.Log("Can not convert game data jsoin to game data");
-            }
-        } 
-        return gameData;
-    } 
 }

@@ -6,6 +6,6 @@ public class WinDialog : MonoBehaviour
 {
     public void LoadNextLevel() {
         gameObject.SetActive(false);
-        GamePlayController.Instance.LoadCurrentLevel();
+        GameController.Instance.LoadCurrentLevel();
     }
 }

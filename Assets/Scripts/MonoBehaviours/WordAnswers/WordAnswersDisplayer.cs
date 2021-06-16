@@ -24,16 +24,9 @@ public class WordAnswersDisplayer : MonoBehaviour
     public void ShowAnswer(List<string> words) {
         for (int i = 0; i < answers.Count; i++)
         {
-            // Debug.Log("word: " + answers[i].GetAnswer());
             if (words.Contains(answers[i].GetAnswer())) {
-                // Debug.Log("In show answer");
                 answers[i].Show();
             }
-            // if (answers[i].GetAnswer() == answer)
-            // {
-            //     answers[i].Show();
-            //     break;
-            // }
         }
     }
     public void ShowAnswer(string word)
