@@ -38,6 +38,14 @@ public class GameController : MonoBehaviour
         answersDisplayer.SetWordAnswers(gamePlay.GetTargetWords());
         answersDisplayer.ShowAnswer(gamePlay.GetSolvedWords());
 		levelTxt.text = "LEVEL: " + Prefs.CurrentLevel;
+
+        GameSessionData sessionData = gamePlay.GetGameSessionData();
+        if (sessionData.HintWord != null && sessionData.HintWord.GetStartPosition() != Vector2Int.one * -1) {
+            // Debug.Log("Inside");
+            gamePlay.SetHintWord(sessionData.HintWord);
+            boardUIController.SetHintedCells(
+                gamePlay.GetAllPositionsInRange(sessionData.HintWord.GetStartPosition(), sessionData.HintWord.GetCurrentPosition()));
+        }
 	}
 
 	public void SetInputCellPosition(Vector2Int pos)
@@ -48,18 +56,18 @@ public class GameController : MonoBehaviour
             boardUIController.SetCellState(fromPosition, BoardCell.BoardCellState.ACTIVE);
         } else
         {
-            if (gamePlay.CheckValidInputPositions(fromPosition, toPosition)) {
+            if (gamePlay.VerityInputPositions(fromPosition, toPosition)) {
                 boardUIController.SetCellsState(
-                    gamePlay.GetAllPositionInRange(fromPosition, toPosition), BoardCell.BoardCellState.NORMAL);
+                    gamePlay.GetAllPositionsInRange(fromPosition, toPosition), BoardCell.BoardCellState.NORMAL);
             }
             toPosition = pos;
-            if (gamePlay.CheckValidInputPositions(fromPosition, toPosition)) {
+            if (gamePlay.VerityInputPositions(fromPosition, toPosition)) {
                 boardUIController.SetCellsState(
-                    gamePlay.GetAllPositionInRange(fromPosition, toPosition), BoardCell.BoardCellState.ACTIVE);
+                    gamePlay.GetAllPositionsInRange(fromPosition, toPosition), BoardCell.BoardCellState.ACTIVE);
             } 
         }
         boardUIController.SetCellState(fromPosition, BoardCell.BoardCellState.ACTIVE);
-        if (gamePlay.CheckValidInputPositions(fromPosition, toPosition)) {
+        if (gamePlay.VerityInputPositions(fromPosition, toPosition)) {
             wordPreviewer.SetWord(gamePlay.GetWord(fromPosition, toPosition));
         } else {
             wordPreviewer.SetWord(gamePlay.GetWord(fromPosition, fromPosition));
@@ -83,13 +91,13 @@ public class GameController : MonoBehaviour
                 Prefs.CurrentLevel++;
                 winDialog.SetActive(true);
             }
-            gamePlay.ResetHintWord();
+            gamePlay.SetHintWord(null);
         }
         else
         {
             // Debug.Log("Change cell state: " + fromPosition + " - " + toPosition);
             boardUIController.SetCellsState(
-                gamePlay.GetAllPositionInRange(fromPosition, toPosition), BoardCell.BoardCellState.NORMAL);
+                gamePlay.GetAllPositionsInRange(fromPosition, toPosition), BoardCell.BoardCellState.NORMAL);
         }
         fromPosition = Vector2Int.one * -1;
         toPosition = Vector2Int.one * -1;
@@ -102,7 +110,7 @@ public class GameController : MonoBehaviour
 	}
 
     private void OnApplicationQuit() {
-        Debug.Log("Has session data: " + Prefs.HasSessionData);
+        // Debug.Log("Has session data: " + Prefs.HasSessionData);
         if (Prefs.HasSessionData) {
             gamePlay.SaveGameSession();
         }
@@ -112,32 +120,21 @@ public class GameController : MonoBehaviour
     {
 		char[,] charBoard = gamePlay.ShuffleBoard();
         boardUIController.Initialize(charBoard);
-        gamePlay.ResetHintWord();
+        gamePlay.SetHintWord(null);
     }
     public void Hint() {
-        if (gamePlay.HasHintWord()) {
+        if (!gamePlay.IsHintWordCompleted()) {
             Vector2Int hintPosition = gamePlay.GetNextHintPosition();
             boardUIController.SetHintedCell(hintPosition);
             // boardUIController.SetCellState(hintPosition, BoardCell.BoardCellState.);
             if (gamePlay.IsHintWordCompleted()) {
-                List<Vector2Int> hintWordPostions = gamePlay.GetHintWordPositions();
+                List<Vector2Int> hintWordPostions = gamePlay.GetHintWordEndPositions();
                 fromPosition = hintWordPostions[0];
                 toPosition = hintWordPostions[1];
                 CheckWord();
             }
         } else {
             Debug.LogError("Can not find hint word");
-            // List<Vector2Int> hintWordPostions = gamePlay.GetHintWordPositions();
-            // fromPosition = hintWordPostions[0];
-            // toPosition = hintWordPostions[1];
-            // CheckWord();
-            // boardUIController.RemoveCellsAndUpdateBoard(
-            //     gamePlay.RemoveCellsInRangeAndCollapsBoard(hintWordPostions[0], hintWordPostions[1]));
-            // if (gamePlay.HasSolvedAllWords()) {
-            //     Prefs.HasSessionData = false;
-            //     Prefs.CurrentLevel++;
-            //     winDialog.SetActive(true);
-            // }
         }
     }
     #endregion

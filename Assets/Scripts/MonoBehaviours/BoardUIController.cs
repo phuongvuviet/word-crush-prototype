@@ -88,6 +88,11 @@ public class BoardUIController : MonoBehaviour
     public void SetCellState(Vector2Int position, BoardCell.BoardCellState state) {
         uiBoard[position.x, position.y].SetState(state);
     }
+    public void SetHintedCells(List<Vector2Int> positions) {
+        for (int i = 0; i < positions.Count; i++) {
+            SetHintedCell(positions[i]);
+        }
+    }
     public void SetHintedCell(Vector2Int pos) {
         uiBoard[pos.x, pos.y].IsHinted = true;
     }

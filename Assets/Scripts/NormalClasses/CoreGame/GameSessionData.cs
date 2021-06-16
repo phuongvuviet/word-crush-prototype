@@ -8,9 +8,11 @@ public class GameSessionData
     public BoardData BoardData; 
     public LevelData LevelData;
     public List<string> SolvedWords;
-    public GameSessionData(LevelData levelData, char[,] board, List<string> solvedWords) {
+    public HintWordInfo HintWord;
+    public GameSessionData(LevelData levelData, char[,] board, List<string> solvedWords, HintWordInfo hintWord) {
         LevelData = levelData;
         BoardData = new BoardData(board);
         SolvedWords = solvedWords;
+        HintWord = hintWord;
     }
 }

@@ -78,7 +78,7 @@ public class BoardLogicController
     public List<Vector2Int> GetAllPositionsInRange(Vector2Int startPosition, Vector2Int endPosition)
     {
         List<Vector2Int> positions = new List<Vector2Int>(); 
-        if (!CheckValidInputPositions(startPosition, endPosition)) {
+        if (!VerityInputPositions(startPosition, endPosition)) {
             positions.Add(startPosition);
             return positions;
         }
@@ -113,7 +113,7 @@ public class BoardLogicController
     }
 
     //public void ResetValidWordColor(S)
-    public bool CheckValidInputPositions(Vector2Int startPosition, Vector2Int endPosition)
+    public bool VerityInputPositions(Vector2Int startPosition, Vector2Int endPosition)
     {
         if (startPosition == endPosition) return true;
         if (startPosition.x != endPosition.x && startPosition.y != endPosition.y)
@@ -201,16 +201,12 @@ public class BoardLogicController
     } 
 
     public bool IsHintWordCompleted(List<string> remainingWords) {
-        if (hintWordInfo == null) {
+        if (hintWordInfo == null || hintWordInfo.Position == Vector2Int.one * -1) {
             hintWordInfo = FindHintWord(remainingWords);
-            // Debug.Log("hint info is null");
         }
         if (hintWordInfo == null) {
-            // Debug.Log("Hint word info is null");
+            Debug.LogError("Invalid boarddd, need to verifyyyyyyyyyyyyyyyyy");
             return true;
-        } else {
-            // Debug.Log("Hint info not null");
-            // Debug.Log(hintWordInfo);
         }
         return hintWordInfo.IsCompleted();
     }

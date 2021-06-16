@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class HintWordInfo 
 {
     public string Word;
@@ -21,7 +22,6 @@ public class HintWordInfo
         CurrentIndex = 0;
     }
     public Vector2Int GetNextCharPosition() {
-        // Debug.Log("Word: " + Word + " start pos: " + Position  + " direction: " + Direction + " index: " + CurrentIndex);
         Vector2Int res = Position + Direction * CurrentIndex;
         CurrentIndex++;
         return res;
@@ -31,6 +31,13 @@ public class HintWordInfo
     }
     public Vector2Int GetEndPosition() {
         return Position + Direction * (Word.Length - 1);
+    }
+    public Vector2Int GetCurrentPosition() {
+        if (CurrentIndex > 0) {
+            return Position + Direction * (CurrentIndex - 1);
+        } else {
+            return Position + Direction * CurrentIndex;
+        }
     }
     public bool IsCompleted() {
         return CurrentIndex == Word.Length;
