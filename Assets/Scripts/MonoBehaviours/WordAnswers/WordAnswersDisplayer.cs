@@ -8,6 +8,7 @@ public class WordAnswersDisplayer : MonoBehaviour
 
     List<WordAnswer> answers = new List<WordAnswer>();
 
+
     public void SetWordAnswers(List<string> words)
     {
         for (int i = 0; i < answers.Count; i++) {
@@ -28,6 +29,16 @@ public class WordAnswersDisplayer : MonoBehaviour
                 answers[i].Show();
             }
         }
+    }
+    public List<Vector2> GetLetterPositions(string word) {
+        for (int i = 0; i < answers.Count; i++)
+        {
+            if (answers[i].GetAnswer() == word)
+            {
+                return answers[i].GetLetterPositions();
+            }
+        }
+        return null;
     }
     public void ShowAnswer(string word)
     {

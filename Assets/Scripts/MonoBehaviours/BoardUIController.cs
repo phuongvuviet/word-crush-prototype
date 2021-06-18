@@ -153,4 +153,14 @@ public class BoardUIController : MonoBehaviour
             yield return null;
         }
     }
+    public List<Vector2> GetCellWorldPosition(List<Vector2Int> positions) {
+        List<Vector2> res = new List<Vector2>();
+        for (int i = 0; i < positions.Count; i++) {
+            res.Add(uiBoard[positions[i].x, positions[i].y].transform.position);
+        }
+        return res;
+    }
+    public Vector2 GetCellSize() {
+        return new Vector2(cellSize, cellSize);
+    }
 }

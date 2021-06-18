@@ -30,4 +30,11 @@ public class WordAnswer : MonoBehaviour
     {
         return answerStr;
     }
+    public List<Vector2> GetLetterPositions() {
+        List<Vector2> res = new List<Vector2>();
+        for (int i = 0; i < cells.Count; i++) {
+            res.Add(cells[i].transform.position);
+        }
+        return res;
+    }
 }

@@ -9,6 +9,7 @@ public class GameController : MonoBehaviour
     [SerializeField] BoardUIController boardUIController;
     [SerializeField] WordPreviewer wordPreviewer;
 	[SerializeField] WordAnswersDisplayer answersDisplayer; 
+    [SerializeField] FloatingWordController floatingWord;
     [SerializeField] GameObject winDialog; 
     [SerializeField] TextMeshProUGUI levelTxt;
     [SerializeField] TextMeshProUGUI questionTxt;
@@ -97,15 +98,19 @@ public class GameController : MonoBehaviour
     {
         string curWord = gamePlay.GetWord(fromPosition, toPosition);
         if (gamePlay.CheckWord(curWord)) {
-            answersDisplayer.ShowAnswer(curWord);
+            List<Vector2Int> positionsInBoard = gamePlay.GetAllPositionsInRange(fromPosition, toPosition);
+            floatingWord.MoveWord(curWord, boardUIController.GetCellSize(), new Vector2(50, 50), 
+                boardUIController.GetCellWorldPosition(positionsInBoard), answersDisplayer.GetLetterPositions(curWord), () => {
+                answersDisplayer.ShowAnswer(curWord);
+                if (gamePlay.HasSolvedAllWords()) {
+                    Prefs.HasSessionData = false;
+                    Prefs.CurrentLevel++;
+                    winDialog.SetActive(true);
+                }
+                gamePlay.SetHintWord(null);
+            });
             boardUIController.RemoveCellsAndCollapseBoard(
                 gamePlay.RemoveCellsInRangeAndCollapsBoard(fromPosition, toPosition));
-            if (gamePlay.HasSolvedAllWords()) {
-                Prefs.HasSessionData = false;
-                Prefs.CurrentLevel++;
-                winDialog.SetActive(true);
-            }
-            gamePlay.SetHintWord(null);
         }
         else
         {
