@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler 
 {
@@ -12,9 +13,10 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
 
     float cellSize;
     float cellMargin;
-    [SerializeField] Vector2Int positionInBoard;
-    [SerializeField] char letter = ' ';
+    Vector2Int positionInBoard;
+    char letter = ' ';
     bool isPointerDown = false;
+    RectTransform rectTransform;
     BoardCellState curState = BoardCellState.NORMAL;
     bool isHinted = false;
     public bool IsHinted{
@@ -32,11 +34,15 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
         ACTIVE
     }
 
-    public void UpdateAnchoredPosition()
-    {
-        //Debug.Log(positionInBoard.x + "-" + positionInBoard.y);
-        GetComponent<RectTransform>().anchoredPosition = new Vector2(positionInBoard.y, positionInBoard.x) * cellSize;
+    private void Awake() {
+        rectTransform = GetComponent<RectTransform>();
     }
+
+    // public void UpdateAnchoredPosition()
+    // {
+    //     //Debug.Log(positionInBoard.x + "-" + positionInBoard.y);
+    //     GetComponent<RectTransform>().anchoredPosition = new Vector2(positionInBoard.y, positionInBoard.x) * cellSize;
+    // }
 
     public void SetLetter(char letter)
     {
@@ -51,6 +57,7 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         //Debug.Log($"Update {positionInBoard.x}-{positionInBoard.y} -> {pos.x}-{pos.y}");
         positionInBoard = pos;
+        rectTransform.anchoredPosition = new Vector2(positionInBoard.y, positionInBoard.x) * cellSize + Vector2.one * cellSize / 2f;
     }
     public Vector2Int GetPositionInBoard()
     {
@@ -60,17 +67,25 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         cellSize = size;
         cellMargin = margin;
-        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellSize - cellMargin);
-        GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellSize - cellMargin);
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellSize - cellMargin);
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellSize - cellMargin);
     }
-    public void SetState(BoardCellState state) {
-        // this.curState = state;
+    public void SetState(BoardCellState state, bool useAnim = true) {
         switch (state)
         {   
             case BoardCellState.ACTIVE:
-                bgImage.color = activeColor;
+                // Debug.Log("Active");
+                if (curState == BoardCellState.NORMAL) {
+                    bgImage.color = activeColor;
+                    if (useAnim) {
+                        transform.DOScale(1.1f, .2f).OnComplete(() => {
+                            transform.DOScale(1f, .15f);
+                        });
+                    }
+                } 
                 break;
             case BoardCellState.NORMAL:
+                // Debug.Log("Normal");
                 if (IsHinted) {
                     bgImage.color = hintColor;
                 } else {
@@ -87,6 +102,9 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         if (GameController.Instance.HasStartPosition())
         {
+            // transform.DOScale(1.1f, .2f).OnComplete(() => {
+            //     transform.DOScale(1f, .15f);
+            // });
             GameController.Instance.SetInputCellPosition(positionInBoard);
         } 
     }
@@ -95,6 +113,9 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         if (!GameController.Instance.HasStartPosition())
         {
+            // transform.DOScale(1.2f, .2f).OnComplete(() => {
+            //     transform.DOScale(1f, .15f);
+            // });
             GameController.Instance.SetInputCellPosition(positionInBoard);
         }
     }

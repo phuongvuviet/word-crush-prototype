@@ -15,7 +15,7 @@ public class GameController : MonoBehaviour
 
     public static GameController Instance;
 
-    Vector2Int fromPosition = Vector2Int.one * -1, toPosition = Vector2Int.one * -1;
+    Vector2Int fromPosition = Vector2Int.one * -1, toPosition = Vector2Int.one * -1, lastValidPosition = Vector2Int.one * -1;
     string curAns = "";
     HintWordInfo hintWordInfo = null;
     WordStackGamePlay gamePlay;
@@ -52,21 +52,48 @@ public class GameController : MonoBehaviour
     {
         if (fromPosition == Vector2Int.one * -1)
         {
-            fromPosition = toPosition = pos;
+            fromPosition = toPosition = lastValidPosition = pos;
             boardUIController.SetCellState(fromPosition, BoardCell.BoardCellState.ACTIVE);
         } else
         {
-            if (gamePlay.VerityInputPositions(fromPosition, toPosition)) {
+            if (gamePlay.VerityInputPositions(fromPosition, pos)) {
+                if (Utility.IsInside(pos, fromPosition, lastValidPosition)) {
+                    // Debug.Log("Inside");
+                    boardUIController.SetCellsState(
+                        gamePlay.GetAllPositionsInRange(lastValidPosition, Utility.GetPreLastPosition(lastValidPosition, pos)), BoardCell.BoardCellState.NORMAL);
+                } else {
+                    // Debug.Log("Nottt Inside");
+                    boardUIController.SetCellsState(
+                        gamePlay.GetAllPositionsInRange(Utility.GetNextPosition(lastValidPosition, pos), pos), BoardCell.BoardCellState.NORMAL);
+                }
+                // Debug.Log("1");
+                // Vector2Int nextLastValidPosition = Utility.GetNextPosition(lastValidPosition, pos);
                 boardUIController.SetCellsState(
-                    gamePlay.GetAllPositionsInRange(fromPosition, toPosition), BoardCell.BoardCellState.NORMAL);
+                    gamePlay.GetAllPositionsInRange(fromPosition, pos), BoardCell.BoardCellState.ACTIVE);
+                lastValidPosition = pos;
+                toPosition = pos;
+            } else {
+                // Debug.Log("2");
+                boardUIController.SetCellsState(
+                    gamePlay.GetAllPositionsInRange(fromPosition, lastValidPosition), BoardCell.BoardCellState.NORMAL);
+                toPosition = pos;
             }
-            toPosition = pos;
-            if (gamePlay.VerityInputPositions(fromPosition, toPosition)) {
-                boardUIController.SetCellsState(
-                    gamePlay.GetAllPositionsInRange(fromPosition, toPosition), BoardCell.BoardCellState.ACTIVE);
-            } 
+            // if (gamePlay.VerityInputPositions(fromPosition, toPosition)) {
+            //     lastValidPosition = toPosition;
+                // boardUIController.SetCellsState(
+                //     gamePlay.GetAllPositionsInRange(fromPosition, toPosition), BoardCell.BoardCellState.NORMAL);
+                // if (gamePlay.VerityInputPositions(toPosition, pos)) {
+                //     boardUIController.SetCellsState(
+                //         gamePlay.GetAllPositionsInRange(toPosition, pos), BoardCell.BoardCellState.ACTIVE);
+                // } else {
+                // }
+            // } else {
+            //     boardUIController.SetCellsState(
+            //         gamePlay.GetAllPositionsInRange(toPosition, pos), BoardCell.BoardCellState.ACTIVE);
+            // }
         }
-        boardUIController.SetCellState(fromPosition, BoardCell.BoardCellState.ACTIVE);
+        toPosition = pos;
+        boardUIController.SetCellState(fromPosition, BoardCell.BoardCellState.ACTIVE, false);
         if (gamePlay.VerityInputPositions(fromPosition, toPosition)) {
             wordPreviewer.SetWord(gamePlay.GetWord(fromPosition, toPosition));
         } else {

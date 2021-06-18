@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BoardUIController : MonoBehaviour 
@@ -58,13 +59,11 @@ public class BoardUIController : MonoBehaviour
                 {
                     BoardCell newCell = Instantiate(cellPrefab, cellParent);
                     newCell.SetLetter(charBoard[i, j]);
-                    newCell.SetPositionInBoard(new Vector2Int(i, j));
                     newCell.SetCellSizeAndMargin(cellSize, cellMargin);
+                    newCell.SetPositionInBoard(new Vector2Int(i, j));
                     RectTransform newCellRectTrans = newCell.GetComponent<RectTransform>();
                     newCellRectTrans.anchorMin = Vector2.zero;
                     newCellRectTrans.anchorMax = Vector2.zero;
-                    newCellRectTrans.pivot = Vector2.zero;
-                    newCellRectTrans.anchoredPosition = new Vector2(j * cellSize, i * cellSize);
                     uiBoard[i, j] = newCell;
                 } else {
                     uiBoard[i, j] = null;
@@ -83,10 +82,29 @@ public class BoardUIController : MonoBehaviour
             } else {
                 Debug.Log("Change state of null cell : " + pos.x + "-" + pos.y);
             }
+            // if (state == BoardCell.BoardCellState.ACTIVE) {
+            //     yield return new WaitForSeconds(.02f);
+            // }
         }
+        // StartCoroutine(COSetCellsState(cellPositions, state));
     }
-    public void SetCellState(Vector2Int position, BoardCell.BoardCellState state) {
-        uiBoard[position.x, position.y].SetState(state);
+    public IEnumerator COSetCellsState(List<Vector2Int> cellPositions, BoardCell.BoardCellState state) {
+        for (int i = 0; i < cellPositions.Count; i++)
+        {
+            Vector2Int pos = cellPositions[i];
+            if (uiBoard[pos.x, pos.y]) {
+                uiBoard[pos.x, pos.y].SetState(state);
+            } else {
+                Debug.Log("Change state of null cell : " + pos.x + "-" + pos.y);
+            }
+            if (state == BoardCell.BoardCellState.ACTIVE) {
+                yield return new WaitForSeconds(.02f);
+            }
+        }
+        yield return null;
+    }
+    public void SetCellState(Vector2Int position, BoardCell.BoardCellState state, bool useAnim = true) {
+        uiBoard[position.x, position.y].SetState(state, useAnim);
     }
     public void SetHintedCells(List<Vector2Int> positions) {
         for (int i = 0; i < positions.Count; i++) {
@@ -114,20 +132,20 @@ public class BoardUIController : MonoBehaviour
                 uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y].SetPositionInBoard(moveInfo.ToPosition);
             }
         }
-        UpdateCellsPosition();
+        // UpdateCellsPosition();
     }
 
-    private void UpdateCellsPosition()
-    {
-        for (int j = 0; j < uiBoard.GetLength(1); j++)
-        {
-            for (int i = 0; i < uiBoard.GetLength(0); i++)
-            {
-                if (uiBoard[i, j])
-                {
-                    uiBoard[i, j].UpdateAnchoredPosition();
-                }
-            }
-        }
-    }
+    // private void UpdateCellsPosition()
+    // {
+    //     for (int j = 0; j < uiBoard.GetLength(1); j++)
+    //     {
+    //         for (int i = 0; i < uiBoard.GetLength(0); i++)
+    //         {
+    //             if (uiBoard[i, j])
+    //             {
+    //                 uiBoard[i, j].UpdateAnchoredPosition();
+    //             }
+    //         }
+    //     }
+    // }
 }
