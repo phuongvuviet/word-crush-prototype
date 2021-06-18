@@ -115,14 +115,32 @@ public class BoardUIController : MonoBehaviour
         uiBoard[pos.x, pos.y].IsHinted = true;
     }
 
-    public void RemoveCellsAndUpdateBoard(CellSteps cellSteps)
+    public void RemoveCellsAndCollapseBoard(CellSteps cellSteps)
     {
+        // for (int i = 0; i < cellSteps.CellsToDeletes.Count; i++) {
+        //     Vector2Int cellPos = cellSteps.CellsToDeletes[i];
+        //     // Debug.Log(cellPos.x + " " + cellPos.y);
+        //     Destroy(uiBoard[cellPos.x, cellPos.y].gameObject);
+        //     uiBoard[cellPos.x, cellPos.y] = null;
+        // }
+        // for (int i = 0; i < cellSteps.Steps.Count; i++) {
+        //     Vector2Int lastPos = new Vector2Int(-1, -1);
+        //     for (int j = 0; j < cellSteps.Steps[i].Count; j++) {
+        //         MoveInfo moveInfo = cellSteps.Steps[i][j];
+        //         uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y] = uiBoard[moveInfo.FromPosition.x, moveInfo.FromPosition.y];//.SetPositionInBoard(moveInfo.ToPosition);
+        //         uiBoard[moveInfo.FromPosition.x, moveInfo.FromPosition.y] = null;
+        //         uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y].SetPositionInBoard(moveInfo.ToPosition);
+        //     }
+        // }
+        StartCoroutine(CORemoveCelslAndCollapsedBoard(cellSteps));
+    }
+    IEnumerator CORemoveCelslAndCollapsedBoard(CellSteps cellSteps) {
         for (int i = 0; i < cellSteps.CellsToDeletes.Count; i++) {
             Vector2Int cellPos = cellSteps.CellsToDeletes[i];
-            // Debug.Log(cellPos.x + " " + cellPos.y);
             Destroy(uiBoard[cellPos.x, cellPos.y].gameObject);
             uiBoard[cellPos.x, cellPos.y] = null;
         }
+        yield return new WaitForSeconds(.1f);
         for (int i = 0; i < cellSteps.Steps.Count; i++) {
             Vector2Int lastPos = new Vector2Int(-1, -1);
             for (int j = 0; j < cellSteps.Steps[i].Count; j++) {
@@ -130,22 +148,9 @@ public class BoardUIController : MonoBehaviour
                 uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y] = uiBoard[moveInfo.FromPosition.x, moveInfo.FromPosition.y];//.SetPositionInBoard(moveInfo.ToPosition);
                 uiBoard[moveInfo.FromPosition.x, moveInfo.FromPosition.y] = null;
                 uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y].SetPositionInBoard(moveInfo.ToPosition);
+                yield return null;
             }
+            yield return null;
         }
-        // UpdateCellsPosition();
     }
-
-    // private void UpdateCellsPosition()
-    // {
-    //     for (int j = 0; j < uiBoard.GetLength(1); j++)
-    //     {
-    //         for (int i = 0; i < uiBoard.GetLength(0); i++)
-    //         {
-    //             if (uiBoard[i, j])
-    //             {
-    //                 uiBoard[i, j].UpdateAnchoredPosition();
-    //             }
-    //         }
-    //     }
-    // }
 }

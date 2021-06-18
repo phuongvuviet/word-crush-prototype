@@ -78,19 +78,6 @@ public class GameController : MonoBehaviour
                     gamePlay.GetAllPositionsInRange(fromPosition, lastValidPosition), BoardCell.BoardCellState.NORMAL);
                 toPosition = pos;
             }
-            // if (gamePlay.VerityInputPositions(fromPosition, toPosition)) {
-            //     lastValidPosition = toPosition;
-                // boardUIController.SetCellsState(
-                //     gamePlay.GetAllPositionsInRange(fromPosition, toPosition), BoardCell.BoardCellState.NORMAL);
-                // if (gamePlay.VerityInputPositions(toPosition, pos)) {
-                //     boardUIController.SetCellsState(
-                //         gamePlay.GetAllPositionsInRange(toPosition, pos), BoardCell.BoardCellState.ACTIVE);
-                // } else {
-                // }
-            // } else {
-            //     boardUIController.SetCellsState(
-            //         gamePlay.GetAllPositionsInRange(toPosition, pos), BoardCell.BoardCellState.ACTIVE);
-            // }
         }
         toPosition = pos;
         boardUIController.SetCellState(fromPosition, BoardCell.BoardCellState.ACTIVE, false);
@@ -111,7 +98,7 @@ public class GameController : MonoBehaviour
         string curWord = gamePlay.GetWord(fromPosition, toPosition);
         if (gamePlay.CheckWord(curWord)) {
             answersDisplayer.ShowAnswer(curWord);
-            boardUIController.RemoveCellsAndUpdateBoard(
+            boardUIController.RemoveCellsAndCollapseBoard(
                 gamePlay.RemoveCellsInRangeAndCollapsBoard(fromPosition, toPosition));
             if (gamePlay.HasSolvedAllWords()) {
                 Prefs.HasSessionData = false;

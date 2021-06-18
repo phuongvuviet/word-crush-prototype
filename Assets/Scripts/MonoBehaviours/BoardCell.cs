@@ -57,7 +57,8 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         //Debug.Log($"Update {positionInBoard.x}-{positionInBoard.y} -> {pos.x}-{pos.y}");
         positionInBoard = pos;
-        rectTransform.anchoredPosition = new Vector2(positionInBoard.y, positionInBoard.x) * cellSize + Vector2.one * cellSize / 2f;
+        rectTransform.DOAnchorPos(new Vector2(positionInBoard.y, positionInBoard.x) * cellSize + Vector2.one * cellSize / 2f, .2f);
+        // rectTransform.anchoredPosition = new Vector2(positionInBoard.y, positionInBoard.x) * cellSize + Vector2.one * cellSize / 2f;
     }
     public Vector2Int GetPositionInBoard()
     {
@@ -78,9 +79,12 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
                 if (curState == BoardCellState.NORMAL) {
                     bgImage.color = activeColor;
                     if (useAnim) {
-                        transform.DOScale(1.1f, .2f).OnComplete(() => {
-                            transform.DOScale(1f, .15f);
+                        transform.SetAsLastSibling();
+                        transform.DOScale(1.05f, .2f).OnComplete(() => {
+                            transform.DOScale(1f, .1f);
                         });
+                        // transform.DOScale(.9f, .1f).OnComplete(() => {
+                        // });
                     }
                 } 
                 break;
