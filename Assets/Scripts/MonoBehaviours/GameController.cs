@@ -101,6 +101,8 @@ public class GameController : MonoBehaviour
             isAnimEnded = false;
             if (gamePlay.GetHintWord() == curWord) {
                 gamePlay.SetHintWord(null);
+            } else if (gamePlay.FindHintWord(new List<string>(){gamePlay.GetHintWord()}) != null) {
+                gamePlay.UpdateHintWordInfo();
             }
             if (gamePlay.HasSolvedAllWords()) {
                 hasWon = true;

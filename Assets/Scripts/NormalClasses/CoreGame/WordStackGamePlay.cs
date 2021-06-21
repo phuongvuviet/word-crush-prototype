@@ -129,4 +129,10 @@ public class WordStackGamePlay
         }
         return "";
     }
+    public HintWordInfo FindHintWord(List<string> remainingWords) {
+        return boardLogic.FindHintWord(remainingWords);
+    }
+    public void UpdateHintWordInfo() {
+        boardLogic.UpdateHintWordInfo();
+    }
 }
