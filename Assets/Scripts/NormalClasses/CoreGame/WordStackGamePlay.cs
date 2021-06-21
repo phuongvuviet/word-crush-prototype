@@ -120,4 +120,13 @@ public class WordStackGamePlay
     public void SetHintWord(HintWordInfo hintWord) {
         boardLogic.SetHintWordInfo(hintWord);
     }
+    public HintWordInfo GetHintWordInfo() {
+        return boardLogic.GetHintWordInfo();
+    } 
+    public string GetHintWord() {
+        if (GetHintWordInfo() != null) {
+            return GetHintWordInfo().Word;
+        }
+        return "";
+    }
 }

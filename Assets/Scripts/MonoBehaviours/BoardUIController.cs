@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -115,7 +116,7 @@ public class BoardUIController : MonoBehaviour
         uiBoard[pos.x, pos.y].IsHinted = true;
     }
 
-    public void RemoveCellsAndCollapseBoard(CellSteps cellSteps)
+    public void RemoveCellsAndCollapseBoard(CellSteps cellSteps, Action callback = null)
     {
         // for (int i = 0; i < cellSteps.CellsToDeletes.Count; i++) {
         //     Vector2Int cellPos = cellSteps.CellsToDeletes[i];
@@ -132,9 +133,9 @@ public class BoardUIController : MonoBehaviour
         //         uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y].SetPositionInBoard(moveInfo.ToPosition);
         //     }
         // }
-        StartCoroutine(CORemoveCelslAndCollapsedBoard(cellSteps));
+        StartCoroutine(CORemoveCelslAndCollapsedBoard(cellSteps, callback));
     }
-    IEnumerator CORemoveCelslAndCollapsedBoard(CellSteps cellSteps) {
+    IEnumerator CORemoveCelslAndCollapsedBoard(CellSteps cellSteps, Action callback = null) {
         for (int i = 0; i < cellSteps.CellsToDeletes.Count; i++) {
             Vector2Int cellPos = cellSteps.CellsToDeletes[i];
             Destroy(uiBoard[cellPos.x, cellPos.y].gameObject);
@@ -152,6 +153,8 @@ public class BoardUIController : MonoBehaviour
             }
             yield return null;
         }
+        callback?.Invoke();
+        // Debug.LogError("Remove cells doneeeeeeeeeeeeeeeeeeeeeeeeeeee");
     }
     public List<Vector2> GetCellWorldPosition(List<Vector2Int> positions) {
         List<Vector2> res = new List<Vector2>();

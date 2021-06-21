@@ -17,9 +17,13 @@ public class GameController : MonoBehaviour
     public static GameController Instance;
 
     Vector2Int fromPosition = Vector2Int.one * -1, toPosition = Vector2Int.one * -1, lastValidPosition = Vector2Int.one * -1;
-    string curAns = "";
     HintWordInfo hintWordInfo = null;
     WordStackGamePlay gamePlay;
+    string curAns = "";
+    bool isAnimEnded = false; 
+    bool hasWon = false;
+    
+
     private void Awake()
     {
         Input.multiTouchEnabled = false;
@@ -29,6 +33,8 @@ public class GameController : MonoBehaviour
 	{
 		gamePlay = new WordStackGamePlay();
 		InitUI();
+        hasWon = false;
+        isAnimEnded = true;
 	}
 
 	private void InitUI()
@@ -42,7 +48,6 @@ public class GameController : MonoBehaviour
 
         GameSessionData sessionData = gamePlay.GetGameSessionData();
         if (sessionData.HintWord != null && sessionData.HintWord.GetStartPosition() != Vector2Int.one * -1) {
-            // Debug.Log("Inside");
             gamePlay.SetHintWord(sessionData.HintWord);
             boardUIController.SetHintedCells(
                 gamePlay.GetAllPositionsInRange(sessionData.HintWord.GetStartPosition(), sessionData.HintWord.GetCurrentPosition()));
@@ -59,22 +64,17 @@ public class GameController : MonoBehaviour
         {
             if (gamePlay.VerityInputPositions(fromPosition, pos)) {
                 if (Utility.IsInside(pos, fromPosition, lastValidPosition)) {
-                    // Debug.Log("Inside");
                     boardUIController.SetCellsState(
                         gamePlay.GetAllPositionsInRange(lastValidPosition, Utility.GetPreLastPosition(lastValidPosition, pos)), BoardCell.BoardCellState.NORMAL);
                 } else {
-                    // Debug.Log("Nottt Inside");
                     boardUIController.SetCellsState(
                         gamePlay.GetAllPositionsInRange(Utility.GetNextPosition(lastValidPosition, pos), pos), BoardCell.BoardCellState.NORMAL);
                 }
-                // Debug.Log("1");
-                // Vector2Int nextLastValidPosition = Utility.GetNextPosition(lastValidPosition, pos);
                 boardUIController.SetCellsState(
                     gamePlay.GetAllPositionsInRange(fromPosition, pos), BoardCell.BoardCellState.ACTIVE);
                 lastValidPosition = pos;
                 toPosition = pos;
             } else {
-                // Debug.Log("2");
                 boardUIController.SetCellsState(
                     gamePlay.GetAllPositionsInRange(fromPosition, lastValidPosition), BoardCell.BoardCellState.NORMAL);
                 toPosition = pos;
@@ -98,19 +98,28 @@ public class GameController : MonoBehaviour
     {
         string curWord = gamePlay.GetWord(fromPosition, toPosition);
         if (gamePlay.CheckWord(curWord)) {
+            isAnimEnded = false;
+            if (gamePlay.GetHintWord() == curWord) {
+                gamePlay.SetHintWord(null);
+            }
+            if (gamePlay.HasSolvedAllWords()) {
+                hasWon = true;
+                Prefs.HasSessionData = false;
+                Prefs.CurrentLevel++;
+            }
             List<Vector2Int> positionsInBoard = gamePlay.GetAllPositionsInRange(fromPosition, toPosition);
             floatingWord.MoveWord(curWord, boardUIController.GetCellSize(), new Vector2(50, 50), 
                 boardUIController.GetCellWorldPosition(positionsInBoard), answersDisplayer.GetLetterPositions(curWord), () => {
                 answersDisplayer.ShowAnswer(curWord);
                 if (gamePlay.HasSolvedAllWords()) {
-                    Prefs.HasSessionData = false;
-                    Prefs.CurrentLevel++;
                     winDialog.SetActive(true);
                 }
-                gamePlay.SetHintWord(null);
             });
             boardUIController.RemoveCellsAndCollapseBoard(
-                gamePlay.RemoveCellsInRangeAndCollapsBoard(fromPosition, toPosition));
+                gamePlay.RemoveCellsInRangeAndCollapsBoard(fromPosition, toPosition), 
+                () => {
+                    isAnimEnded = true;
+                });
         }
         else
         {
@@ -126,6 +135,8 @@ public class GameController : MonoBehaviour
 	{
         gamePlay.LoadGameData();
         InitUI();
+        hasWon = false;
+        isAnimEnded = true;
 	}
 
     private void OnApplicationQuit() {
@@ -137,11 +148,14 @@ public class GameController : MonoBehaviour
     #region  Button Event
     public void ShuffleBoard()
     {
+        if (hasWon || !isAnimEnded) return;
 		char[,] charBoard = gamePlay.ShuffleBoard();
         boardUIController.Initialize(charBoard);
         gamePlay.SetHintWord(null);
     }
+
     public void Hint() {
+        if(hasWon || !isAnimEnded) return;
         if (!gamePlay.IsHintWordCompleted()) {
             Vector2Int hintPosition = gamePlay.GetNextHintPosition();
             boardUIController.SetHintedCell(hintPosition);
@@ -153,6 +167,7 @@ public class GameController : MonoBehaviour
                 CheckWord();
             }
         } else {
+            gamePlay.SetHintWord(null);
             Debug.LogError("Can not find hint word");
         }
     }

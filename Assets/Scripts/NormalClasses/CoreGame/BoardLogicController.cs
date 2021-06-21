@@ -192,6 +192,24 @@ public class BoardLogicController
         return cellSteps;
     }
 
+    // public void RemoveVerticalGap() {
+    //     int cols = -1;
+    //     bool hasChar = false;
+    //     for (int i = 0; i < numCols; i++) {
+    //         if (board[0, i] != ' ') {
+    //             hasChar = true;
+    //         } else {
+    //             if (hasChar && i < numCols - 1 && board[0, i + 1] != ' ') {
+    //                 cols = i;
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     if (cols != -1) {
+    //         int mid
+    //     }
+    // }
+
     public Vector2Int GetNextHintPosition(List<string> remainingWords) {
         if (hintWordInfo == null) {
             hintWordInfo = FindHintWord(remainingWords);
