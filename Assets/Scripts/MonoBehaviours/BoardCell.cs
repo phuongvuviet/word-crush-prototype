@@ -13,12 +13,13 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
 
     float cellSize;
     float cellMargin;
-    Vector2Int positionInBoard;
+    Vector2Int positionInBoard = Vector2Int.one * -1;
     char letter = ' ';
     bool isPointerDown = false;
     RectTransform rectTransform;
     BoardCellState curState = BoardCellState.NORMAL;
     bool isHinted = false;
+
     public bool IsHinted{
         get{
             return isHinted;
@@ -38,12 +39,6 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
         rectTransform = GetComponent<RectTransform>();
     }
 
-    // public void UpdateAnchoredPosition()
-    // {
-    //     //Debug.Log(positionInBoard.x + "-" + positionInBoard.y);
-    //     GetComponent<RectTransform>().anchoredPosition = new Vector2(positionInBoard.y, positionInBoard.x) * cellSize;
-    // }
-
     public void SetLetter(char letter)
     {
         letterText.text = letter.ToString();
@@ -55,10 +50,14 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     }
     public void SetPositionInBoard(Vector2Int pos)
     {
-        //Debug.Log($"Update {positionInBoard.x}-{positionInBoard.y} -> {pos.x}-{pos.y}");
+        if (positionInBoard != Vector2Int.one * -1) {
+            rectTransform.DOAnchorPos(new Vector2(pos.y, pos.x) * cellSize + Vector2.one * cellSize / 2f, .2f);
+        }
         positionInBoard = pos;
-        rectTransform.DOAnchorPos(new Vector2(positionInBoard.y, positionInBoard.x) * cellSize + Vector2.one * cellSize / 2f, .2f);
-        // rectTransform.anchoredPosition = new Vector2(positionInBoard.y, positionInBoard.x) * cellSize + Vector2.one * cellSize / 2f;
+    }
+    public void SetPositionInBoardWhenStartGame(Vector2Int pos) {
+        positionInBoard = pos;
+        rectTransform.DOAnchorPos(new Vector2(pos.y, pos.x) * cellSize + Vector2.one * cellSize / 2f, .2f);
     }
     public Vector2Int GetPositionInBoard()
     {

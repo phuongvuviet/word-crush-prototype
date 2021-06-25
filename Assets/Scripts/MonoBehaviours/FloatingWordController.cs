@@ -15,13 +15,41 @@ public class FloatingWordController : MonoBehaviour
             letterInstance.SetSize(startSize);
             letterInstance.transform.position = fromPositions[i];//new Vector3(fromPositions[i].x, fromPositions[i].y, 0); 
             letterInstance.GetComponent<RectTransform>().DOSizeDelta(targetSize, duration);
-            letterInstance.transform.DOMove(toPositions[i], duration).OnComplete(() => {
-                if (!hasInvolved) {
-                    callback?.Invoke();
-                    hasInvolved = true;
-                }
-                Destroy(letterInstance.gameObject);
-            });
+            // letterInstance.transform.DOMove(toPositions[i], duration).OnComplete(() => {
+            //     if (!hasInvolved) {
+            //         callback?.Invoke();
+            //         hasInvolved = true;
+            //     }
+            //     Destroy(letterInstance.gameObject);
+            // });
+            MoveBenzier(letterInstance.transform, toPositions[i], () => {
+                    if (!hasInvolved) {
+                        Debug.Log("Move letter done");
+                        callback?.Invoke();
+                        hasInvolved = true;
+                    }
+                    Destroy(letterInstance.gameObject);
+                });
         }
     }
+    public void MoveBenzier(Transform transformToMove, Vector2 targetPosition, Action callback = null) {
+        // transform.position = startPos;
+        float horizontalDistance = Mathf.Abs(transformToMove.position.x - targetPosition.x);
+        Vector2 direction = (targetPosition - (Vector2)transformToMove.position).normalized;
+        Vector2 controlPoint1 = transformToMove.position; 
+        Vector2 controlPoint2 = targetPosition; 
+        // Debug.Log("Distance: " + horizontalDistance);
+        if (transformToMove.position.x < targetPosition.x) {
+            controlPoint1 += Vector2.right * (.75f * horizontalDistance);
+            controlPoint2 += Vector2.down * .25f;// * (.25f * horizontalDistance);
+        } else {
+            controlPoint1 += Vector2.left * (.75f * horizontalDistance);
+            controlPoint2 += Vector2.down * .25f;// * (.25f * horizontalDistance);
+        }
+        Vector3[] path = new Vector3[]{targetPosition, controlPoint1, controlPoint2};
+        transformToMove.DOPath(path, 1, PathType.CubicBezier, PathMode.Ignore, 10, Color.red).SetEase(Ease.OutSine)
+        .OnComplete(() => {
+            callback?.Invoke();
+        });
+    } 
 }

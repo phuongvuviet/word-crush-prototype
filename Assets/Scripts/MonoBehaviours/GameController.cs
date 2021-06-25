@@ -41,6 +41,7 @@ public class GameController : MonoBehaviour
 	{
 		char[,] charBoard = gamePlay.GetCharBoard();
         boardUIController.Initialize(charBoard);
+
 		wordPreviewer.ResetText();
         answersDisplayer.SetWordAnswers(gamePlay.GetTargetWords());
         answersDisplayer.ShowAnswer(gamePlay.GetSolvedWords());
@@ -63,12 +64,12 @@ public class GameController : MonoBehaviour
         } else
         {
             if (gamePlay.VerityInputPositions(fromPosition, pos)) {
-                if (Utility.IsInside(pos, fromPosition, lastValidPosition)) {
+                if (Utilities.IsInside(pos, fromPosition, lastValidPosition)) {
                     boardUIController.SetCellsState(
-                        gamePlay.GetAllPositionsInRange(lastValidPosition, Utility.GetPreLastPosition(lastValidPosition, pos)), BoardCell.BoardCellState.NORMAL);
+                        gamePlay.GetAllPositionsInRange(lastValidPosition, Utilities.GetPreLastPosition(lastValidPosition, pos)), BoardCell.BoardCellState.NORMAL);
                 } else {
                     boardUIController.SetCellsState(
-                        gamePlay.GetAllPositionsInRange(Utility.GetNextPosition(lastValidPosition, pos), pos), BoardCell.BoardCellState.NORMAL);
+                        gamePlay.GetAllPositionsInRange(Utilities.GetNextBeginPosition(lastValidPosition, pos), pos), BoardCell.BoardCellState.NORMAL);
                 }
                 boardUIController.SetCellsState(
                     gamePlay.GetAllPositionsInRange(fromPosition, pos), BoardCell.BoardCellState.ACTIVE);

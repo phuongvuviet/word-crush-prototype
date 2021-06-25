@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class Utility 
+public static class Utilities 
 {
-    public static Vector2Int GetNextPosition(Vector2Int fromPos, Vector2Int toPos) {
+    public static Vector2Int GetNextBeginPosition(Vector2Int fromPos, Vector2Int toPos) {
         if (fromPos == toPos) return fromPos;
         Vector2Int direction = GetDirection(fromPos, toPos); 
         Vector2Int res = fromPos + direction; 
@@ -22,7 +22,6 @@ public static class Utility
         if (fromPos == toPos) {
             return vec == fromPos;
         }
-        // Debug.Log("vec: " + vec + " from: " + fromPos + " to: " + toPos);
         if (fromPos.x == toPos.x) {
             int minY = Mathf.Min(fromPos.y, toPos.y);
             int maxY = Mathf.Max(fromPos.y, toPos.y);
@@ -30,7 +29,6 @@ public static class Utility
         } else if (fromPos.y == toPos.y) {
             int minX = Mathf.Min(fromPos.x, toPos.x);
             int maxX = Mathf.Max(fromPos.x, toPos.x);
-            // Debug.Log("min: " + minX + " max: " + maxX + " vec: " + vec.x);
             return vec.x >= minX && vec.x <= maxX;
         }
         return false;

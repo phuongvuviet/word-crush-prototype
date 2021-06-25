@@ -1,32 +1,44 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class Test1 : MonoBehaviour
 {
-    [SerializeField] AnimationCurve curve;
-    [SerializeField] RectTransform pos1, pos2;
-    [SerializeField] RectTransform rectTrans;
+    public List<Transform> pos;
+    public PathType pathType;
+    public Transform targetTransfrom;
+    Vector3 startPos;
 
-    float timer = .0f;
-    float horizontalDistance = 0f, verticalDistance = 0f;
-    private void Awake() {
-        // rectTrans = GetComponent<RectTransform>();
-        rectTrans.anchoredPosition = pos1.anchoredPosition;
-        horizontalDistance = Mathf.Abs(pos1.anchoredPosition.x - pos2.anchoredPosition.x);
-        verticalDistance = Mathf.Abs(pos1.anchoredPosition.y - pos2.anchoredPosition.y);
+    private void Start() {
+        startPos = transform.position;
+        // Move();
     }
-    private void FixedUpdate() {
-        if (timer >= 1f) return;
-        Debug.Log("value: " + curve.Evaluate(timer));
-        float curX = Mathf.Lerp(pos1.anchoredPosition.x, pos2.anchoredPosition.x, timer);
-        float curY = Mathf.Lerp(pos1.anchoredPosition.y, pos2.anchoredPosition.y, curve.Evaluate(timer));
-        rectTrans.anchoredPosition = new Vector2(curX, curY);
-        timer += Time.deltaTime / 2.0f;
 
-        // rectTrans.anchoredPosition = Vector3.Lerp(pos1.anchoredPosition, pos2.anchoredPosition, curve.Evaluate(timer));
+    public void Move() {
+        transform.position = startPos;
+        Vector3[] waypoints = new Vector3[pos.Count];
+        for (int i = 0; i < pos.Count; i++) {
+            waypoints[i] = pos[i].position;
+        }
+        transform.DOPath(waypoints, 2, pathType, PathMode.Ignore, 10, Color.red);
     }
-    // public void Move() {
-    //     curve.Evaluate()
-    // }
+
+    public void Move2() {
+        transform.position = startPos;
+        float horizontalDistance = Mathf.Abs(transform.position.x - targetTransfrom.position.x);
+        Vector2 direction = (targetTransfrom.position - transform.position).normalized;
+        Vector2 controlPoint1 = transform.position; 
+        Vector2 controlPoint2 = targetTransfrom.position; 
+        Debug.Log("Distance: " + horizontalDistance);
+        if (transform.position.x < targetTransfrom.position.x) {
+            controlPoint1 += Vector2.right * (1.5f * horizontalDistance);
+            controlPoint2 += Vector2.right * (.25f * horizontalDistance);
+        } else {
+            controlPoint1 += Vector2.right * (1.5f * horizontalDistance);
+            controlPoint2 += Vector2.left * (.25f * horizontalDistance);
+        }
+        Vector3[] path = new Vector3[]{targetTransfrom.position, controlPoint1, controlPoint2};
+        transform.DOPath(path, 2, pathType, PathMode.Ignore, 10, Color.red).SetEase(Ease.Linear);
+    }
 }
