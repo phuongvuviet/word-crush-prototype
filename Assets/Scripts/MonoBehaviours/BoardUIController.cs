@@ -23,19 +23,30 @@ public class BoardUIController : MonoBehaviour
     }
 
     public void Initialize(char[,] board) {
+        StopAllCoroutines();
         if (uiBoard != null) {
             ClearUIBoard();
         }
         int boardHeight = board.GetLength(0);
         int boardWidth = board.GetLength(1);
-        cellSize = Mathf.Min(boardCanvasHeight / board.GetLength(0), boardCanvasWidth / board.GetLength(1));
+        // cellSize = Mathf.Min(boardCanvasHeight / board.GetLength(0), boardCanvasWidth / board.GetLength(1));
+        // if (cellSize * boardWidth < boardCanvasWidth) {
+        //     cellParent.anchoredPosition = new Vector2((boardCanvasWidth - (cellSize * boardWidth)) / 2.0f, cellParent.anchoredPosition.y); 
+        // } else {
+        //     cellParent.anchoredPosition = new Vector2(0f, cellParent.anchoredPosition.y); 
+        // }
+        ComputeCellSize(boardWidth, boardHeight);
+        uiBoard = new BoardCell[boardHeight, boardWidth];
+        StartCoroutine(GenerateBoard(board));
+    }
+    void ComputeCellSize(int boardWidth, int boardHeight) {
+        cellSize = Mathf.Min(boardCanvasHeight / boardHeight, boardCanvasWidth / boardWidth);
         if (cellSize * boardWidth < boardCanvasWidth) {
             cellParent.anchoredPosition = new Vector2((boardCanvasWidth - (cellSize * boardWidth)) / 2.0f, cellParent.anchoredPosition.y); 
         } else {
             cellParent.anchoredPosition = new Vector2(0f, cellParent.anchoredPosition.y); 
         }
-        uiBoard = new BoardCell[boardHeight, boardWidth];
-        StartCoroutine(GenerateBoard(board));
+        //return cellSize;
     }
 
     void ClearUIBoard()
@@ -75,11 +86,17 @@ public class BoardUIController : MonoBehaviour
                 newCell.transform.position = new Vector2(newCell.transform.position.x, screenTopWorldPosition + 1f);
                 uiBoard[row, j] = newCell;
                 newCell.SetPositionInBoardWhenStartGame(new Vector2Int(row, j));
+                yield return new WaitForSeconds(.1f);
             } else {
                 uiBoard[row, j] = null;
             }
-            yield return new WaitForSeconds(.1f);
             // yield return null;
+        }
+        if (row == uiBoard.GetLength(0) - 1) {
+            // GameController.Instance.SetIsAnimEnded(true);
+            // GameController.Instance.IsAnimEnded = true;
+            // Debug.LogError("Generate board succesful");
+            GameController.Instance.ShowHintedCells();
         }
     }
 
@@ -123,6 +140,7 @@ public class BoardUIController : MonoBehaviour
         }
     }
     public void SetHintedCell(Vector2Int pos) {
+        Debug.Log("Set hint cell pos: " + pos);
         uiBoard[pos.x, pos.y].IsHinted = true;
     }
 
@@ -159,6 +177,24 @@ public class BoardUIController : MonoBehaviour
 		uiBoard[moveInfo.FromPosition.x, moveInfo.FromPosition.y] = null;
 		uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y].SetPositionInBoard(moveInfo.ToPosition);
 	}
+
+    public void ShuffleBoard(List<MoveInfo> moveInfos, int boardWidth, int boardHeight) {
+        StartCoroutine(COShuffleBoard(moveInfos, boardWidth, boardHeight));
+    }
+    IEnumerator COShuffleBoard(List<MoveInfo> moveInfos, int boardWidth, int boardHeight) {
+        ComputeCellSize(boardWidth, boardHeight);
+        BoardCell[,] newUIBoard = new BoardCell[boardHeight, boardWidth];
+        for (int i = 0; i < moveInfos.Count; i++) {
+            Debug.Log("Shuffe : " + moveInfos[i]);
+            newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y] = uiBoard[moveInfos[i].FromPosition.x, moveInfos[i].FromPosition.y];
+            newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y].SetPositionInBoard(moveInfos[i].ToPosition, .1f);
+            newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y].SetCellSizeAndMargin(cellSize, cellMargin);
+            yield return null;
+        }
+        uiBoard = newUIBoard;
+        yield return new WaitForSeconds(.2f);
+        GameController.Instance.IsAnimEnded = true;
+    }
 
 	public List<Vector2> GetCellWorldPosition(List<Vector2Int> positions) {
         List<Vector2> res = new List<Vector2>();

@@ -9,6 +9,7 @@ public class WordStackGamePlay
     GameDataLoader gameDataLoader;
     GameSessionData sessionData;
     char[,] charBoard;
+    List<string> remainingWords; 
 
     public WordStackGamePlay() {
         gameDataLoader = new GameDataLoader();
@@ -34,12 +35,44 @@ public class WordStackGamePlay
         if (sessionData.HintWord != null) {
             boardLogic.SetHintWordInfo(sessionData.HintWord);
         }
+        ComputeRemainingWords();
     }
-    public char[,] ShuffleBoard() {
-        List<string> remaingWords = GetRemainingWords();
-        charBoard = boardGenerator.GenerateBoard(remaingWords);
+    public List<MoveInfo> ShuffleBoard() {
+        // List<string> remaingWords = GetRemainingWords();
+        Dictionary<char, List<Vector2Int>> charPositionsBefore, charPositionAfter;
+        charPositionsBefore = GetCharPositions();
+        charBoard = boardGenerator.GenerateBoard(remainingWords);
         boardLogic.SetCharBoard(charBoard);
-        return charBoard;
+        charPositionAfter = GetCharPositions();
+        return GetShuffleMove(charPositionsBefore, charPositionAfter);
+    }
+
+    public List<MoveInfo> GetShuffleMove(Dictionary<char, List<Vector2Int>> before, Dictionary<char, List<Vector2Int>> after) {
+        List<MoveInfo> moveInfos = new List<MoveInfo>();
+        foreach (var item in before) {
+            for (int i = 0; i < item.Value.Count; i++) {
+                Vector2Int fromPos = item.Value[i];
+                Vector2Int toPos = after[item.Key][i];
+                Debug.Log("from: " + fromPos + " to: " + toPos);
+                moveInfos.Add(new MoveInfo(fromPos, toPos));
+            }
+        }
+        return moveInfos;
+    }
+
+    Dictionary<char, List<Vector2Int>> GetCharPositions() {
+        Dictionary<char, List<Vector2Int>> charPositions = new Dictionary<char, List<Vector2Int>>();
+        for (int i = 0; i < charBoard.GetLength(0); i++) {
+            for (int j = 0; j < charBoard.GetLength(1); j++) {
+                if (charBoard[i, j] != ' ') {
+                    if (!charPositions.ContainsKey(charBoard[i, j])) {
+                        charPositions.Add(charBoard[i, j], new List<Vector2Int>());
+                    }
+                    charPositions[charBoard[i, j]].Add(new Vector2Int(i, j));
+                }
+            }
+        }
+        return charPositions;
     }
     public char[,] GetCharBoard() {
         if (sessionData == null) {
@@ -70,7 +103,11 @@ public class WordStackGamePlay
             return false;
         }
         if (sessionData.LevelData.Words.Contains(word)) {
+            if (sessionData.SolvedWords == null) {
+                Debug.Log("Solved words is nullllllll");
+            }
             sessionData.SolvedWords.Add(word);
+            remainingWords.Remove(word);
             return true;
         }
         return false;
@@ -86,29 +123,29 @@ public class WordStackGamePlay
     public List<string> GetSolvedWords() {
         return sessionData.SolvedWords;
     }
-    List<string> GetRemainingWords() {
-        // Debug.LogError("1");
-        List<string> remainingWords = new List<string>();
+    void ComputeRemainingWords() {
+        // List<string> remainingWords = new List<string>();
+        remainingWords = new List<string>();
         List<string> allWords = GetTargetWords();
         for (int i = 0; i < allWords.Count; i++) {
             if (!sessionData.SolvedWords.Contains(allWords[i])) {
                 remainingWords.Add(allWords[i]);
             }
         }
-        return remainingWords;
     }
+    // public List<string> GetRemainingWords() {
+    //     // Debug.LogError("1");
+    //     return remainingWords;
+    // }
     public GameSessionData GetGameSessionData() {
         return sessionData;
     }
     public Vector2Int GetNextHintPosition() {
-        List<string> remainingWords = GetRemainingWords();
+        // List<string> remainingWords = GetRemainingWords();
         return boardLogic.GetNextHintPosition(remainingWords);
     }
-    // public bool HasHintWord() {
-    //     return !boardLogic.IsHintWordCompleted(GetRemainingWords());
-    // }
     public bool IsHintWordCompleted() {
-        return boardLogic.IsHintWordCompleted(GetRemainingWords());
+        return boardLogic.IsHintWordCompleted(remainingWords);
     }
     public List<Vector2Int> GetHintWordEndPositions() {
         HintWordInfo hintWord = boardLogic.GetHintWordInfo();
@@ -117,11 +154,11 @@ public class WordStackGamePlay
             hintWord.GetEndPosition()
         };
     }
-    public void SetHintWord(HintWordInfo hintWord) {
-        boardLogic.SetHintWordInfo(hintWord);
-    }
     public HintWordInfo GetHintWordInfo() {
         return boardLogic.GetHintWordInfo();
+    } 
+    public void SetHintWord(HintWordInfo hintWordInfo) {
+        boardLogic.SetHintWordInfo(hintWordInfo);
     } 
     public string GetHintWord() {
         if (GetHintWordInfo() != null) {
@@ -129,10 +166,22 @@ public class WordStackGamePlay
         }
         return "";
     }
-    public HintWordInfo FindHintWord(List<string> remainingWords) {
+    public void ResetHintWord() {
+        boardLogic.ResetHintWord();
+    }
+    public HintWordInfo FindHintWord() {
         return boardLogic.FindHintWord(remainingWords);
     }
     public void UpdateHintWordInfo() {
         boardLogic.UpdateHintWordInfo();
+    }
+    public bool CheckIfBoardValid() {
+        return boardLogic.CheckIfBoardValid(remainingWords);
+    }
+    public int GetBoardWidth() {
+        return charBoard.GetLength(1);
+    }
+    public int GetBoardHeight() {
+        return charBoard.GetLength(0);
     }
 }

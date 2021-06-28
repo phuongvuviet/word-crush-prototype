@@ -15,7 +15,6 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     float cellMargin;
     Vector2Int positionInBoard = Vector2Int.one * -1;
     char letter = ' ';
-    bool isPointerDown = false;
     RectTransform rectTransform;
     BoardCellState curState = BoardCellState.NORMAL;
     bool isHinted = false;
@@ -48,10 +47,10 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         return letter;
     }
-    public void SetPositionInBoard(Vector2Int pos)
+    public void SetPositionInBoard(Vector2Int pos, float time = .2f)
     {
         if (positionInBoard != Vector2Int.one * -1) {
-            rectTransform.DOAnchorPos(new Vector2(pos.y, pos.x) * cellSize + Vector2.one * cellSize / 2f, .2f);
+            rectTransform.DOAnchorPos(new Vector2(pos.y, pos.x) * cellSize + Vector2.one * cellSize / 2f, time);
         }
         positionInBoard = pos;
     }

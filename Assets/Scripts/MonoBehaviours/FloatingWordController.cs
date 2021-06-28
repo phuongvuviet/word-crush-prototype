@@ -9,19 +9,13 @@ public class FloatingWordController : MonoBehaviour
     [SerializeField] Letter letterPrefab;
     public void MoveWord(string word, Vector2 startSize, Vector2 targetSize, List<Vector2> fromPositions, List<Vector2> toPositions, Action callback) {
         bool hasInvolved = false;
+        Debug.Log("Word length: " + word.Length + " fromLen: " + fromPositions.Count + " toLen: " + toPositions.Count);
         for (int i = 0; i < word.Length; i++) {
             Letter letterInstance = Instantiate(letterPrefab, transform); 
             letterInstance.SetLetter(word[i]);
             letterInstance.SetSize(startSize);
             letterInstance.transform.position = fromPositions[i];//new Vector3(fromPositions[i].x, fromPositions[i].y, 0); 
             letterInstance.GetComponent<RectTransform>().DOSizeDelta(targetSize, duration);
-            // letterInstance.transform.DOMove(toPositions[i], duration).OnComplete(() => {
-            //     if (!hasInvolved) {
-            //         callback?.Invoke();
-            //         hasInvolved = true;
-            //     }
-            //     Destroy(letterInstance.gameObject);
-            // });
             MoveBenzier(letterInstance.transform, toPositions[i], () => {
                     if (!hasInvolved) {
                         Debug.Log("Move letter done");
@@ -47,9 +41,9 @@ public class FloatingWordController : MonoBehaviour
             controlPoint2 += Vector2.down * .25f;// * (.25f * horizontalDistance);
         }
         Vector3[] path = new Vector3[]{targetPosition, controlPoint1, controlPoint2};
-        transformToMove.DOPath(path, 1, PathType.CubicBezier, PathMode.Ignore, 10, Color.red).SetEase(Ease.OutSine)
+        transformToMove.DOPath(path, 20, PathType.CubicBezier, PathMode.Ignore, 10, Color.red).SetEase(Ease.Linear)
         .OnComplete(() => {
             callback?.Invoke();
-        });
+        }).SetSpeedBased();
     } 
 }

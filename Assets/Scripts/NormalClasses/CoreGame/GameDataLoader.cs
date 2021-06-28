@@ -32,7 +32,8 @@ public class GameDataLoader
             if (curLevelData == null) {
                 Debug.LogError("Level data is null");
             }
-            gameData = new GameSessionData(curLevelData, new char[1,1], new List<string>(), null);
+            gameData = new GameSessionData(curLevelData, new char[1,1], new List<string>(), new HintWordInfo());
+            Debug.Log("Dont have game session data");
         }
         return gameData;
     } 
