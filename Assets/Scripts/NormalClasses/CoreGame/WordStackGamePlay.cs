@@ -53,7 +53,7 @@ public class WordStackGamePlay
             for (int i = 0; i < item.Value.Count; i++) {
                 Vector2Int fromPos = item.Value[i];
                 Vector2Int toPos = after[item.Key][i];
-                Debug.Log("from: " + fromPos + " to: " + toPos);
+                // Debug.Log("from: " + fromPos + " to: " + toPos);
                 moveInfos.Add(new MoveInfo(fromPos, toPos));
             }
         }

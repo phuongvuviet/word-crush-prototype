@@ -41,9 +41,9 @@ public class FloatingWordController : MonoBehaviour
             controlPoint2 += Vector2.down * .25f;// * (.25f * horizontalDistance);
         }
         Vector3[] path = new Vector3[]{targetPosition, controlPoint1, controlPoint2};
-        transformToMove.DOPath(path, 20, PathType.CubicBezier, PathMode.Ignore, 10, Color.red).SetEase(Ease.Linear)
+        transformToMove.DOPath(path, .5f, PathType.CubicBezier, PathMode.Ignore, 10, Color.red).SetEase(Ease.Linear)
         .OnComplete(() => {
             callback?.Invoke();
-        }).SetSpeedBased();
+        });
     } 
 }

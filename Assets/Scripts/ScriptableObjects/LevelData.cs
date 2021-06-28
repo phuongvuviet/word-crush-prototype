@@ -6,7 +6,7 @@ using UnityEngine;
 public class LevelData : ScriptableObject 
 {
     public List<string> Words = new List<string>();
-    public string Question;
+    public string Subject;
 }
 
 [System.Serializable]

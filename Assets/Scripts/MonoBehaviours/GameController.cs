@@ -12,7 +12,7 @@ public class GameController : MonoBehaviour
     [SerializeField] FloatingWordController floatingWord;
     [SerializeField] GameObject winDialog; 
     [SerializeField] TextMeshProUGUI levelTxt;
-    [SerializeField] TextMeshProUGUI questionTxt;
+    [SerializeField] TextMeshProUGUI subjectTxt;
 
     public static GameController Instance;
 
@@ -36,35 +36,35 @@ public class GameController : MonoBehaviour
 	{
         hasWon = false;
 		gamePlay = new WordStackGamePlay();
-		InitUI();
+        StartCoroutine(InitUI());
 	}
 
-	private void InitUI()
+	private IEnumerator InitUI()
 	{
-        isAnimEnded = false;
+        GameSessionData sessionData = gamePlay.GetGameSessionData();
+        subjectTxt.gameObject.SetActive(true);
+        answersDisplayer.gameObject.SetActive(false);
+        boardUIController.gameObject.SetActive(false);
+        subjectTxt.text = sessionData.LevelData.Subject;
+        yield return new WaitForSeconds(1f);
+        subjectTxt.gameObject.SetActive(false);
+        answersDisplayer.gameObject.SetActive(true);
+        boardUIController.gameObject.SetActive(true);
 
+        isAnimEnded = false;
 		char[,] charBoard = gamePlay.GetCharBoard();
         boardUIController.Initialize(charBoard);
-
 		wordPreviewer.ResetText();
         answersDisplayer.SetWordAnswers(gamePlay.GetTargetWords());
         answersDisplayer.ShowAnswer(gamePlay.GetSolvedWords());
 		levelTxt.text = "LEVEL: " + Prefs.CurrentLevel;
 
-        GameSessionData sessionData = gamePlay.GetGameSessionData();
         gamePlay.SetHintWord(sessionData.HintWord);
 	}
     public void ShowHintedCells() {
         isAnimEnded = true;
         GameSessionData sessionData = gamePlay.GetGameSessionData();
         if (sessionData.HintWord.HasWordInfo()) {
-            // Debug.Log("Start pos: " + sessionData.HintWord.GetStartPosition());
-            // Debug.Log("Cur pos: " + sessionData.HintWord.GetCurrentPosition());
-            // Debug.Log("--------------------");
-            // foreach (var p in pos) {
-            //     Debug.Log(p);
-            // }
-            // Debug.Log("--------------------");
             var pos = gamePlay.GetAllPositionsInRange(sessionData.HintWord.GetStartPosition(), sessionData.HintWord.GetCurrentPosition()); 
             boardUIController.SetHintedCells(
                 gamePlay.GetAllPositionsInRange(sessionData.HintWord.GetStartPosition(), sessionData.HintWord.GetCurrentPosition())
@@ -189,6 +189,13 @@ public class GameController : MonoBehaviour
     {
         if (hasWon || !isAnimEnded) return;
         isAnimEnded = true;
+        Debug.Log("Shuffle");
+        // gamePlay.ResetHintWord();
+        if (!gamePlay.IsHintWordCompleted()) {
+            List<Vector2Int> hintEndPositions = gamePlay.GetHintWordEndPositions();
+            Debug.Log("Hint end position: " + hintEndPositions[0] + " " + hintEndPositions[1]);
+            boardUIController.UnhintCells(gamePlay.GetAllPositionsInRange(hintEndPositions[0], hintEndPositions[1]));
+        }  
         gamePlay.ResetHintWord();
         List<MoveInfo> moveInfos = gamePlay.ShuffleBoard();
         boardUIController.ShuffleBoard(moveInfos, gamePlay.GetBoardWidth(), gamePlay.GetBoardHeight());

@@ -29,12 +29,6 @@ public class BoardUIController : MonoBehaviour
         }
         int boardHeight = board.GetLength(0);
         int boardWidth = board.GetLength(1);
-        // cellSize = Mathf.Min(boardCanvasHeight / board.GetLength(0), boardCanvasWidth / board.GetLength(1));
-        // if (cellSize * boardWidth < boardCanvasWidth) {
-        //     cellParent.anchoredPosition = new Vector2((boardCanvasWidth - (cellSize * boardWidth)) / 2.0f, cellParent.anchoredPosition.y); 
-        // } else {
-        //     cellParent.anchoredPosition = new Vector2(0f, cellParent.anchoredPosition.y); 
-        // }
         ComputeCellSize(boardWidth, boardHeight);
         uiBoard = new BoardCell[boardHeight, boardWidth];
         StartCoroutine(GenerateBoard(board));
@@ -69,7 +63,7 @@ public class BoardUIController : MonoBehaviour
         for (int i = 0; i < uiBoard.GetLength(0); i++)
         {
             StartCoroutine(GenerateBoardRow(charBoard, i));
-            yield return new WaitForSeconds(.2f);
+            yield return new WaitForSeconds(.1f);
         }
     }
 
@@ -86,7 +80,7 @@ public class BoardUIController : MonoBehaviour
                 newCell.transform.position = new Vector2(newCell.transform.position.x, screenTopWorldPosition + 1f);
                 uiBoard[row, j] = newCell;
                 newCell.SetPositionInBoardWhenStartGame(new Vector2Int(row, j));
-                yield return new WaitForSeconds(.1f);
+                yield return new WaitForSeconds(.05f);
             } else {
                 uiBoard[row, j] = null;
             }
@@ -110,11 +104,7 @@ public class BoardUIController : MonoBehaviour
             } else {
                 Debug.Log("Change state of null cell : " + pos.x + "-" + pos.y);
             }
-            // if (state == BoardCell.BoardCellState.ACTIVE) {
-            //     yield return new WaitForSeconds(.02f);
-            // }
         }
-        // StartCoroutine(COSetCellsState(cellPositions, state));
     }
     public IEnumerator COSetCellsState(List<Vector2Int> cellPositions, BoardCell.BoardCellState state) {
         for (int i = 0; i < cellPositions.Count; i++)
@@ -142,6 +132,11 @@ public class BoardUIController : MonoBehaviour
     public void SetHintedCell(Vector2Int pos) {
         Debug.Log("Set hint cell pos: " + pos);
         uiBoard[pos.x, pos.y].IsHinted = true;
+    }
+    public void UnhintCells(List<Vector2Int> positions) {
+        for (int i = 0; i < positions.Count; i++) {
+            uiBoard[positions[i].x, positions[i].y].IsHinted = false;
+        }
     }
 
     public void RemoveCellsAndCollapseBoard(CellSteps cellSteps, Action callback = null)
@@ -185,10 +180,10 @@ public class BoardUIController : MonoBehaviour
         ComputeCellSize(boardWidth, boardHeight);
         BoardCell[,] newUIBoard = new BoardCell[boardHeight, boardWidth];
         for (int i = 0; i < moveInfos.Count; i++) {
-            Debug.Log("Shuffe : " + moveInfos[i]);
+            // Debug.Log("Shuffe : " + moveInfos[i]);
             newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y] = uiBoard[moveInfos[i].FromPosition.x, moveInfos[i].FromPosition.y];
-            newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y].SetPositionInBoard(moveInfos[i].ToPosition, .1f);
             newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y].SetCellSizeAndMargin(cellSize, cellMargin);
+            newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y].SetPositionInBoard(moveInfos[i].ToPosition, .3f);
             yield return null;
         }
         uiBoard = newUIBoard;

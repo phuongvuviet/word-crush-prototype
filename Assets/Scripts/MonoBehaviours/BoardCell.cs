@@ -25,7 +25,11 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
         }
         set {
             isHinted = value;
-            bgImage.color = hintColor;
+            if (isHinted) {
+                bgImage.color = hintColor;
+            } else {
+                bgImage.color = normalColor;
+            }
         }
     }
 
@@ -37,7 +41,6 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     private void Awake() {
         rectTransform = GetComponent<RectTransform>();
     }
-
     public void SetLetter(char letter)
     {
         letterText.text = letter.ToString();
@@ -56,7 +59,7 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     }
     public void SetPositionInBoardWhenStartGame(Vector2Int pos) {
         positionInBoard = pos;
-        rectTransform.DOAnchorPos(new Vector2(pos.y, pos.x) * cellSize + Vector2.one * cellSize / 2f, .2f);
+        rectTransform.DOAnchorPos(new Vector2(pos.y, pos.x) * cellSize + Vector2.one * cellSize / 2f, .15f);
     }
     public Vector2Int GetPositionInBoard()
     {
@@ -73,7 +76,6 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
         switch (state)
         {   
             case BoardCellState.ACTIVE:
-                // Debug.Log("Active");
                 if (curState == BoardCellState.NORMAL) {
                     bgImage.color = activeColor;
                     if (useAnim) {
@@ -81,13 +83,10 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
                         transform.DOScale(1.05f, .2f).OnComplete(() => {
                             transform.DOScale(1f, .1f);
                         });
-                        // transform.DOScale(.9f, .1f).OnComplete(() => {
-                        // });
                     }
                 } 
                 break;
             case BoardCellState.NORMAL:
-                // Debug.Log("Normal");
                 if (IsHinted) {
                     bgImage.color = hintColor;
                 } else {
@@ -104,9 +103,6 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         if (GameController.Instance.HasStartPosition())
         {
-            // transform.DOScale(1.1f, .2f).OnComplete(() => {
-            //     transform.DOScale(1f, .15f);
-            // });
             GameController.Instance.SetInputCellPosition(positionInBoard);
         } 
     }
@@ -115,9 +111,6 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         if (!GameController.Instance.HasStartPosition())
         {
-            // transform.DOScale(1.2f, .2f).OnComplete(() => {
-            //     transform.DOScale(1f, .15f);
-            // });
             GameController.Instance.SetInputCellPosition(positionInBoard);
         }
     }
