@@ -29,7 +29,7 @@ public class WordAnswersDisplayer : MonoBehaviour
             answers.Add(answerInstance);
 
             AnswerShower endingAnswer = Instantiate(endingAnswerPrefab, endingAnswerParent);
-            Debug.Log("World position: " + answerInstance.transform.position);
+            // Debug.Log("World position: " + answerInstance.transform.position);
             endingAnswer.gameObject.SetActive(false);
             endingAnswer.SetWord(words[i]);
             endingAnswers.Add(endingAnswer);

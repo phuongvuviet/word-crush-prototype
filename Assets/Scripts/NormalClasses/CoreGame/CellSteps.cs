@@ -6,7 +6,7 @@ public class CellSteps
 {
     public List<Vector2Int> CellsToDeletes = new List<Vector2Int>();
     public List<List<MoveInfo>> Steps = new List<List<MoveInfo>>();
-    public List<MoveInfo> HorizontalSteps = new List<MoveInfo>();
+    public List<MoveInfo> HorizontallyCollapsedSteps = new List<MoveInfo>();
 }
 public struct MoveInfo{
     public Vector2Int FromPosition;

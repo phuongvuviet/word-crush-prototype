@@ -122,7 +122,7 @@ public class BoardUIController : MonoBehaviour
         }
     }
     public void SetHintedCell(Vector2Int pos) {
-        Debug.Log("Set hint cell pos: " + pos);
+        // Debug.Log("Set hint cell pos: " + pos);
         uiBoard[pos.x, pos.y].IsHinted = true;
     }
     public void UnhintCells(List<Vector2Int> positions) {
@@ -130,12 +130,21 @@ public class BoardUIController : MonoBehaviour
             uiBoard[positions[i].x, positions[i].y].IsHinted = false;
         }
     }
+    public void UnhintCells() {
+        for (int i = 0; i < uiBoard.GetLength(0); i++) {
+            for (int j = 0; j < uiBoard.GetLength(1); j++) {
+                if (uiBoard[i, j] != null) {
+                    uiBoard[i, j].IsHinted = false;
+                } 
+            }
+        }
+    }
 
     public void RemoveCellsAndCollapseBoard(CellSteps cellSteps, Action callback = null)
     {
-        StartCoroutine(CORemoveCelslAndCollapsedBoard(cellSteps, callback));
+        StartCoroutine(CORemoveCellslAndCollapsedBoard(cellSteps, callback));
     }
-    IEnumerator CORemoveCelslAndCollapsedBoard(CellSteps cellSteps, Action callback = null) {
+    IEnumerator CORemoveCellslAndCollapsedBoard(CellSteps cellSteps, Action callback = null) {
         for (int i = 0; i < cellSteps.CellsToDeletes.Count; i++) {
             Vector2Int cellPos = cellSteps.CellsToDeletes[i];
             Destroy(uiBoard[cellPos.x, cellPos.y].gameObject);
@@ -151,8 +160,8 @@ public class BoardUIController : MonoBehaviour
 			}
 			yield return null;
         }
-        for (int i = 0; i < cellSteps.HorizontalSteps.Count; i++) {
-            UpdateUIBoard(cellSteps.HorizontalSteps[i]);
+        for (int i = 0; i < cellSteps.HorizontallyCollapsedSteps.Count; i++) {
+            UpdateUIBoard(cellSteps.HorizontallyCollapsedSteps[i]);
         }
         callback?.Invoke();
         // Debug.LogError("Remove cells doneeeeeeeeeeeeeeeeeeeeeeeeeeee");

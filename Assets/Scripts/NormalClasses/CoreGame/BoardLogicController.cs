@@ -20,8 +20,9 @@ public class BoardLogicController
     }
     public string GetWord(Vector2Int fromPos, Vector2Int toPos)
     {
-        // Debug.Log("width: " + numCols + " height: " + numRows + " from: " + fromPos + " to: " + toPos);
         string res = "";
+        if (!VerifyInputPositions(fromPos, toPos)) return res;
+        Debug.Log("width: " + numCols + " height: " + numRows + " from: " + fromPos + " to: " + toPos);
         if (fromPos.x == toPos.x)
         {
             if (fromPos.y > toPos.y)
@@ -79,7 +80,7 @@ public class BoardLogicController
     public List<Vector2Int> GetAllPositionsInRange(Vector2Int startPosition, Vector2Int endPosition)
     {
         List<Vector2Int> positions = new List<Vector2Int>(); 
-        if (!VerityInputPositions(startPosition, endPosition)) {
+        if (!VerifyInputPositions(startPosition, endPosition)) {
             Debug.Log("Can not verity positions");
             positions.Add(startPosition);
             return positions;
@@ -115,7 +116,7 @@ public class BoardLogicController
     }
 
     //public void ResetValidWordColor(S)
-    public bool VerityInputPositions(Vector2Int startPosition, Vector2Int endPosition)
+    public bool VerifyInputPositions(Vector2Int startPosition, Vector2Int endPosition)
     {
         if (startPosition == endPosition) return true;
         if (startPosition.x != endPosition.x && startPosition.y != endPosition.y)
@@ -191,7 +192,7 @@ public class BoardLogicController
             }
         }
         // Debug.LogError(Show());
-        cellSteps.HorizontalSteps.AddRange(RemoveVerticalGap());
+        cellSteps.HorizontallyCollapsedSteps.AddRange(RemoveVerticalGap());
         return cellSteps;
     }
 
@@ -320,12 +321,18 @@ public class BoardLogicController
         return hintWordInfo.HasWordInfo();
     }
     public void UpdateHintWordInfo() {
-        if (hintWordInfo == null) {
-            Debug.LogError("Hint word info is nul");
-        } else {
-            HintWordInfo updatedWordInfo = FindHintWord(new List<string>() { hintWordInfo.Word });
-            hintWordInfo.Position = updatedWordInfo.Position;
+        Debug.Log("Update hint word before: " + hintWordInfo.Word);
+        HintWordInfo updatedWordInfo = FindHintWord(new List<string>() { hintWordInfo.Word });
+        Debug.Log("Update hint word after: " + updatedWordInfo.Word);
+        hintWordInfo.Position = updatedWordInfo.Position;
+    }
+    public bool CheckIfBoardHasHintWord() {
+        Debug.Log("Chieck hint word before: " + hintWordInfo.Word);
+        HintWordInfo updatedWordInfo = FindHintWord(new List<string>() { hintWordInfo.Word });
+        if (updatedWordInfo == null) {
+            return false;
         }
+        return true;
     }
     public HintWordInfo GetHintWordInfo() {
         return hintWordInfo;
@@ -334,7 +341,9 @@ public class BoardLogicController
         this.hintWordInfo = hintWordInfo;
     }
     public void ResetHintWord() {
-        hintWordInfo.Reset();
+        if (hintWordInfo != null) {
+            hintWordInfo.Reset();
+        }
     }
 
     public HintWordInfo FindHintWord(List<string> remainingWords) {
@@ -346,23 +355,31 @@ public class BoardLogicController
         }
         List<string> rowWords = GetRowWords(); 
         List<string> colWords = GetColWords();
+        List<int> rowWordIndices = new List<int>();
+        List<int> colWordIndices = new List<int>();
+        for (int i = 0; i < rowWords.Count; i++) rowWordIndices.Add(i);
+        for (int i = 0; i < colWords.Count; i++) colWordIndices.Add(i);
+        Utilities.Shuffle(rowWordIndices);
+        Utilities.Shuffle(colWordIndices);
         HintWordInfo res = new HintWordInfo();
         bool hasRes = false;
-        for (int i = 0; i < rowWords.Count; i++) {
+        for (int i = 0; i < rowWordIndices.Count; i++) {
+            int rowWordIndex = rowWordIndices[i];
+            string curRowWord = rowWords[rowWordIndex];
             if (hasRes) break;
             for (int j = 0; j < remainingWords.Count; j++) {
-                int index = rowWords[i].IndexOf(remainingWords[j]);
+                int index = curRowWord.IndexOf(remainingWords[j]);
                 if (index != -1) {
                     // Debug.LogError("row word: " + rowWords[i] + " remaining: " + remainingWords[j]);
-                    res.Position = new Vector2Int(i, index);
+                    res.Position = new Vector2Int(rowWordIndex, index);
                     res.Word = remainingWords[j];
                     res.Direction = new Vector2Int(0, 1);//Vector2Int.right;
                     hasRes = true;
                     break;
                 } else {
-                    index = rowWords[i].IndexOf(reversedRemainingWords[j]);
+                    index = curRowWord.IndexOf(reversedRemainingWords[j]);
                     if (index != -1) {
-                        res.Position = new Vector2Int(i, index + reversedRemainingWords[j].Length - 1);
+                        res.Position = new Vector2Int(rowWordIndex, index + reversedRemainingWords[j].Length - 1);
                         res.Word = reversedRemainingWords[j].Reversed();
                         res.Direction = new Vector2Int(0, -1); //Vector2Int.left;
                         hasRes = true;
@@ -372,12 +389,14 @@ public class BoardLogicController
             }
         }
         if (!hasRes) {
-            for (int i = 0; i < colWords.Count; i++) {
+            for (int i = 0; i < colWordIndices.Count; i++) {
+                int colWordIndex = colWordIndices[i];
+                string curColWord = colWords[colWordIndex];
                 if (hasRes) break;
                 for (int j = 0; j < remainingWords.Count; j++) {
-                    int index = colWords[i].IndexOf(remainingWords[j]);
+                    int index = curColWord.IndexOf(remainingWords[j]);
                     if (index != -1) {
-                        res.Position = new Vector2Int(index, i);
+                        res.Position = new Vector2Int(index, colWordIndex);
                         res.Word = remainingWords[j];
                         res.Direction = new Vector2Int(1, 0);//Vector2Int.up;
                         hasRes = true;
@@ -385,7 +404,7 @@ public class BoardLogicController
                     } else {
                         index = colWords[i].IndexOf(reversedRemainingWords[j]);
                         if (index != -1) {
-                            res.Position = new Vector2Int(index + reversedRemainingWords[j].Length - 1, i);
+                            res.Position = new Vector2Int(index + reversedRemainingWords[j].Length - 1, colWordIndex);
                             res.Word = reversedRemainingWords[j].Reversed();
                             res.Direction = new Vector2Int(-1, 0);
                             hasRes = true;

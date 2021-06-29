@@ -41,10 +41,25 @@ public class WordStackGamePlay
         // List<string> remaingWords = GetRemainingWords();
         Dictionary<char, List<Vector2Int>> charPositionsBefore, charPositionAfter;
         charPositionsBefore = GetCharPositions();
-        charBoard = boardGenerator.GenerateBoard(remainingWords);
+        char[,] charBoardBefore = charBoard;
+        while (IsSame(charBoard, charBoardBefore)) {
+            charBoard = boardGenerator.GenerateBoard(remainingWords);
+        }
         boardLogic.SetCharBoard(charBoard);
         charPositionAfter = GetCharPositions();
         return GetShuffleMove(charPositionsBefore, charPositionAfter);
+    }
+
+    bool IsSame(char[,] board1,char[,] board2) {
+        if (board1.GetLength(0) != board2.GetLength(0) || board1.GetLength(1) != board2.GetLength(1)) {
+            return false;
+        }     
+        for (int i = 0; i < board1.GetLength(0); i++) {
+            for (int j = 0; j < board1.GetLength(1); j++) {
+                if (board1[i, j] != board2[i, j]) return false;
+            }
+        }
+        return true;
     }
 
     public List<MoveInfo> GetShuffleMove(Dictionary<char, List<Vector2Int>> before, Dictionary<char, List<Vector2Int>> after) {
@@ -90,7 +105,7 @@ public class WordStackGamePlay
         return boardLogic.GetWord(fromPos, toPos);
     }
     public bool VerityInputPositions(Vector2Int fromPos, Vector2Int toPos) {
-        return boardLogic.VerityInputPositions(fromPos, toPos);
+        return boardLogic.VerifyInputPositions(fromPos, toPos);
     }
     public List<Vector2Int> GetAllPositionsInRange(Vector2Int fromPos, Vector2Int toPos) {
         return boardLogic.GetAllPositionsInRange(fromPos, toPos); 
@@ -171,6 +186,9 @@ public class WordStackGamePlay
     }
     public HintWordInfo FindHintWord() {
         return boardLogic.FindHintWord(remainingWords);
+    }
+    public bool CheckIfBoardHasHintWord() {
+        return boardLogic.CheckIfBoardHasHintWord();
     }
     public void UpdateHintWordInfo() {
         boardLogic.UpdateHintWordInfo();

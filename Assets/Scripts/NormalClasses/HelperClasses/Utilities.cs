@@ -38,4 +38,14 @@ public static class Utilities
         direction.Normalize();
         return new Vector2Int((int)direction.x, (int)direction.y);
     }
+    public static void Shuffle<T>(List<T> list)
+    {
+        for (int i = list.Count - 1; i >= 1; i--)
+        {
+            int rdIndex = UnityEngine.Random.Range(0, i + 1);
+            T tmpValue = list[i];
+            list[i] = list[rdIndex];
+            list[rdIndex] = tmpValue;
+        }
+    }
 }

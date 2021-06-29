@@ -24,6 +24,7 @@ public class GameController : MonoBehaviour
     WordStackGamePlay gamePlay;
     bool isAnimEnded = false; 
     bool hasWon = false;
+    BoardCell firstHintedCell = null;
 
     public bool IsAnimEnded{
         get => isAnimEnded;
@@ -50,10 +51,10 @@ public class GameController : MonoBehaviour
         GameSessionData sessionData = gamePlay.GetGameSessionData();
         startSubjectTxt.gameObject.SetActive(true);
         boardUIController.gameObject.SetActive(false);
-        // answersDisplayer.gameObject.SetActive(false);
         answersDisplayer.HideAnswerWords();
         answersDisplayer.HideEndingWords();
 		wordPreviewer.ResetText();
+
         startSubjectTxt.text = sessionData.LevelData.Subject;
         startSubjectTxt.transform.DOScale(1.2f, .3f).OnComplete(() => {
             startSubjectTxt.transform.DOScale(1.0f, .3f);
@@ -174,8 +175,16 @@ public class GameController : MonoBehaviour
                 steps, 
                 () => {
                     isAnimEnded = true;
-                    Debug.LogError("Anim ended true");
                     if (!hasWon) {
+                        if (!gamePlay.IsHintWordCompleted()) {
+                            if (gamePlay.CheckIfBoardHasHintWord()) {
+                                Debug.LogError("Update hinted cells");
+                                gamePlay.UpdateHintWordInfo();
+                            } else {
+                                Debug.LogError("Reset hinted cells");
+                                ResetHintedCells();
+                            }
+                        }
                         if (!gamePlay.CheckIfBoardValid()) {
                             Debug.Log("Board is invaliddddddddddddddddddddddddddd");
                             ShuffleBoard();
@@ -185,13 +194,17 @@ public class GameController : MonoBehaviour
         }
         else
         {
-            // Debug.Log("Change cell state: " + fromPosition + " - " + toPosition);
+            isAnimEnded = true;
             boardUIController.SetCellsState(
                 gamePlay.GetAllPositionsInRange(fromPosition, toPosition), BoardCell.BoardCellState.NORMAL);
         }
         fromPosition = Vector2Int.one * -1;
         toPosition = Vector2Int.one * -1;
         wordPreviewer.ResetText();
+    }
+
+    public void ResetHintedCells() {
+        boardUIController.UnhintCells();
     }
 
     IEnumerator DelayActivateWinDialog() {
@@ -207,10 +220,10 @@ public class GameController : MonoBehaviour
     }
 	public void LoadCurrentLevel()
 	{
-        gamePlay.LoadGameData();
-        StartCoroutine(InitUI());
         hasWon = false;
         isAnimEnded = true;
+        gamePlay.LoadGameData();
+        StartCoroutine(InitUI());
 	}
 
     private void OnApplicationQuit() {
@@ -223,8 +236,8 @@ public class GameController : MonoBehaviour
     public void ShuffleBoard()
     {
         if (hasWon || !isAnimEnded) return;
-        isAnimEnded = true;
-        Debug.Log("Shuffle");
+        Debug.Log("Shuffle - anim ended: " + isAnimEnded + " has won: " + hasWon);
+        isAnimEnded = false;
         // gamePlay.ResetHintWord();
         if (!gamePlay.IsHintWordCompleted()) {
             List<Vector2Int> hintEndPositions = gamePlay.GetHintWordEndPositions();
@@ -237,15 +250,18 @@ public class GameController : MonoBehaviour
     }
 
     public void Hint() {
+        Debug.Log("Hint - hasWon: " + hasWon + " isAnimEnded: " + isAnimEnded);
         if(hasWon || !isAnimEnded) return;
-        Debug.LogError("Hint");
         Vector2Int hintPosition = gamePlay.GetNextHintPosition();
         boardUIController.SetHintedCell(hintPosition);
+        isAnimEnded = false;
         if (gamePlay.IsHintWordCompleted()) {
             List<Vector2Int> hintWordPostions = gamePlay.GetHintWordEndPositions();
             fromPosition = hintWordPostions[0];
             toPosition = hintWordPostions[1];
             StartCoroutine(DelayAndCheckWord());
+        } else {
+            isAnimEnded = true;
         }
     }
     IEnumerator DelayAndCheckWord() {
