@@ -22,7 +22,7 @@ public class BoardUIController : MonoBehaviour
         screenTopWorldPosition = Camera.main.ViewportToWorldPoint(Vector3.up).y;
     }
 
-    public void Initialize(char[,] board) {
+    public void Initialize(char[,] board, Action callback) {
         StopAllCoroutines();
         if (uiBoard != null) {
             ClearUIBoard();
@@ -31,16 +31,7 @@ public class BoardUIController : MonoBehaviour
         int boardWidth = board.GetLength(1);
         ComputeCellSize(boardWidth, boardHeight);
         uiBoard = new BoardCell[boardHeight, boardWidth];
-        StartCoroutine(GenerateBoard(board));
-    }
-    void ComputeCellSize(int boardWidth, int boardHeight) {
-        cellSize = Mathf.Min(boardCanvasHeight / boardHeight, boardCanvasWidth / boardWidth);
-        if (cellSize * boardWidth < boardCanvasWidth) {
-            cellParent.anchoredPosition = new Vector2((boardCanvasWidth - (cellSize * boardWidth)) / 2.0f, cellParent.anchoredPosition.y); 
-        } else {
-            cellParent.anchoredPosition = new Vector2(0f, cellParent.anchoredPosition.y); 
-        }
-        //return cellSize;
+        StartCoroutine(GenerateBoard(board, callback));
     }
 
     void ClearUIBoard()
@@ -58,13 +49,14 @@ public class BoardUIController : MonoBehaviour
         }
     }
 
-    IEnumerator GenerateBoard(char[,] charBoard)
+    IEnumerator GenerateBoard(char[,] charBoard, Action callback)
     {
         for (int i = 0; i < uiBoard.GetLength(0); i++)
         {
             StartCoroutine(GenerateBoardRow(charBoard, i));
             yield return new WaitForSeconds(.1f);
         }
+        callback?.Invoke();
     }
 
     IEnumerator GenerateBoardRow(char[,] charBoard, int row) {
@@ -191,7 +183,7 @@ public class BoardUIController : MonoBehaviour
         GameController.Instance.IsAnimEnded = true;
     }
 
-	public List<Vector2> GetCellWorldPosition(List<Vector2Int> positions) {
+	public List<Vector2> GetCellWorldPositions(List<Vector2Int> positions) {
         List<Vector2> res = new List<Vector2>();
         for (int i = 0; i < positions.Count; i++) {
             res.Add(uiBoard[positions[i].x, positions[i].y].transform.position);
@@ -200,5 +192,13 @@ public class BoardUIController : MonoBehaviour
     }
     public Vector2 GetCellSize() {
         return new Vector2(cellSize, cellSize);
+    }
+    void ComputeCellSize(int boardWidth, int boardHeight) {
+        cellSize = Mathf.Min(boardCanvasHeight / boardHeight, boardCanvasWidth / boardWidth);
+        if (cellSize * boardWidth < boardCanvasWidth) {
+            cellParent.anchoredPosition = new Vector2((boardCanvasWidth - (cellSize * boardWidth)) / 2.0f, cellParent.anchoredPosition.y); 
+        } else {
+            cellParent.anchoredPosition = new Vector2(0f, cellParent.anchoredPosition.y); 
+        }
     }
 }

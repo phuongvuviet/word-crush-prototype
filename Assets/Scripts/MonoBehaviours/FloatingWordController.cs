@@ -9,7 +9,7 @@ public class FloatingWordController : MonoBehaviour
     [SerializeField] Letter letterPrefab;
     public void MoveWord(string word, Vector2 startSize, Vector2 targetSize, List<Vector2> fromPositions, List<Vector2> toPositions, Action callback) {
         bool hasInvolved = false;
-        Debug.Log("Word length: " + word.Length + " fromLen: " + fromPositions.Count + " toLen: " + toPositions.Count);
+        // Debug.Log("Word length: " + word.Length + " fromLen: " + fromPositions.Count + " toLen: " + toPositions.Count);
         for (int i = 0; i < word.Length; i++) {
             Letter letterInstance = Instantiate(letterPrefab, transform); 
             letterInstance.SetLetter(word[i]);

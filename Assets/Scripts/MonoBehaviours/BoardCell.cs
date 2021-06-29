@@ -4,10 +4,11 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG.Tweening;
+using TMPro;
 
 public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler 
 {
-    [SerializeField] Text letterText;
+    [SerializeField] TextMeshProUGUI letterText;
     [SerializeField] Color activeColor, normalColor, hintColor;
     [SerializeField] Image bgImage;
 
@@ -69,6 +70,9 @@ public class BoardCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandle
     {
         cellSize = size;
         cellMargin = margin;
+
+        // rectTransform.DOSizeDelta(new Vector2(cellSize - cellMargin, cellSize - cellMargin), .1f);
+
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellSize - cellMargin);
         rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, cellSize - cellMargin);
     }

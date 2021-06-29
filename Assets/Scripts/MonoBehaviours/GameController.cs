@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using DG.Tweening;
 
 public class GameController : MonoBehaviour
 {
@@ -10,9 +11,12 @@ public class GameController : MonoBehaviour
     [SerializeField] WordPreviewer wordPreviewer;
 	[SerializeField] WordAnswersDisplayer answersDisplayer; 
     [SerializeField] FloatingWordController floatingWord;
-    [SerializeField] GameObject winDialog; 
-    [SerializeField] TextMeshProUGUI levelTxt;
-    [SerializeField] TextMeshProUGUI subjectTxt;
+    [SerializeField] WinDialog winDialog; 
+    [SerializeField] TextMeshProUGUI levelTxt, subjectTxt;
+    [SerializeField] TextMeshProUGUI startSubjectTxt;
+    [SerializeField] CanvasGroup boosterButtonsCG;
+    [SerializeField] GameObject endingWordsBg; 
+    [SerializeField] RectTransform endingAnswerParent; 
 
     public static GameController Instance;
 
@@ -41,26 +45,53 @@ public class GameController : MonoBehaviour
 
 	private IEnumerator InitUI()
 	{
+        endingAnswerParent.anchoredPosition = Vector2.zero;
+        endingWordsBg.gameObject.SetActive(false);
         GameSessionData sessionData = gamePlay.GetGameSessionData();
-        subjectTxt.gameObject.SetActive(true);
-        answersDisplayer.gameObject.SetActive(false);
+        startSubjectTxt.gameObject.SetActive(true);
         boardUIController.gameObject.SetActive(false);
-        subjectTxt.text = sessionData.LevelData.Subject;
-        yield return new WaitForSeconds(1f);
-        subjectTxt.gameObject.SetActive(false);
-        answersDisplayer.gameObject.SetActive(true);
-        boardUIController.gameObject.SetActive(true);
-
-        isAnimEnded = false;
-		char[,] charBoard = gamePlay.GetCharBoard();
-        boardUIController.Initialize(charBoard);
+        // answersDisplayer.gameObject.SetActive(false);
+        answersDisplayer.HideAnswerWords();
+        answersDisplayer.HideEndingWords();
 		wordPreviewer.ResetText();
-        answersDisplayer.SetWordAnswers(gamePlay.GetTargetWords());
-        answersDisplayer.ShowAnswer(gamePlay.GetSolvedWords());
+        startSubjectTxt.text = sessionData.LevelData.Subject;
+        startSubjectTxt.transform.DOScale(1.2f, .3f).OnComplete(() => {
+            startSubjectTxt.transform.DOScale(1.0f, .3f);
+        });
 		levelTxt.text = "LEVEL: " + Prefs.CurrentLevel;
+        subjectTxt.gameObject.SetActive(false); 
+        boosterButtonsCG.alpha = 0f;
+        boosterButtonsCG.interactable = false;
+        yield return new WaitForSeconds(1.5f);
+        isAnimEnded = false;
+        startSubjectTxt.gameObject.SetActive(false);
 
-        gamePlay.SetHintWord(sessionData.HintWord);
+		char[,] charBoard = gamePlay.GetCharBoard();
+        boardUIController.gameObject.SetActive(true);
+        boardUIController.Initialize(charBoard, ShowUIAfterGeneratingBoard);
 	}
+    void ShowUIAfterGeneratingBoard() {
+        StartCoroutine(COShowUIAfterGeneratingBoard());
+    }
+    IEnumerator COShowUIAfterGeneratingBoard() {
+        Debug.Log("Generate board done");
+        subjectTxt.gameObject.SetActive(true); 
+        subjectTxt.text = gamePlay.GetGameSessionData().LevelData.Subject;
+        boosterButtonsCG.alpha = 1f;
+        boosterButtonsCG.interactable = true;
+        yield return new WaitForSeconds(.1f);
+        // answersDisplayer.gameObject.SetActive(true);
+        answersDisplayer.ShowAnswerWords();
+        answersDisplayer.ShowEndingWords();
+        boardUIController.gameObject.SetActive(true);
+        answersDisplayer.SetWordAnswers(gamePlay.GetTargetWords());
+        answersDisplayer.ShowAnswers(gamePlay.GetSolvedWords());
+        answersDisplayer.transform.DOScale(1.1f, .1f).OnComplete(() => {
+            answersDisplayer.transform.DOScale(1.0f, .1f);
+        });
+        gamePlay.SetHintWord(gamePlay.GetGameSessionData().HintWord);
+    }
+
     public void ShowHintedCells() {
         isAnimEnded = true;
         GameSessionData sessionData = gamePlay.GetGameSessionData();
@@ -121,9 +152,6 @@ public class GameController : MonoBehaviour
             if (gamePlay.GetHintWord() == curWord) {
                 gamePlay.ResetHintWord();
             } 
-            // else if (gamePlay. && gamePlay.FindHintWord(new List<string>(){gamePlay.GetHintWord()}) != null) {
-            //     gamePlay.UpdateHintWordInfo();
-            // }
             if (gamePlay.GetHintWordInfo() == null) {
                 Debug.LogError("Hint word info is null in game controller");
             }
@@ -136,7 +164,7 @@ public class GameController : MonoBehaviour
             CellSteps steps = gamePlay.RemoveCellsInRangeAndCollapsBoard(fromPosition, toPosition);
             //Debug.Log("-- from: " + fromPosition + " to: " + toPosition + " posInBoard: " + positionsInBoard.Count);
             floatingWord.MoveWord(curWord, boardUIController.GetCellSize(), new Vector2(50, 50), 
-                boardUIController.GetCellWorldPosition(positionsInBoard), answersDisplayer.GetLetterPositions(curWord), () => {
+                boardUIController.GetCellWorldPositions(positionsInBoard), answersDisplayer.GetLetterPositions(curWord), () => {
                 answersDisplayer.ShowAnswer(curWord);
                 if (gamePlay.HasSolvedAllWords()) {
                     StartCoroutine(DelayActivateWinDialog());
@@ -168,12 +196,19 @@ public class GameController : MonoBehaviour
 
     IEnumerator DelayActivateWinDialog() {
         yield return new WaitForSeconds(.5f);
-        winDialog.SetActive(true);
+        wordPreviewer.ResetText();
+        answersDisplayer.HideAnswerWords();
+        subjectTxt.gameObject.SetActive(false);
+        endingWordsBg.gameObject.SetActive(true);
+        boosterButtonsCG.alpha = 0f;
+        boosterButtonsCG.interactable = false;
+        yield return endingAnswerParent.DOAnchorPosY(-200, 1f);
+        winDialog.gameObject.SetActive(true);
     }
 	public void LoadCurrentLevel()
 	{
         gamePlay.LoadGameData();
-        InitUI();
+        StartCoroutine(InitUI());
         hasWon = false;
         isAnimEnded = true;
 	}
@@ -184,7 +219,7 @@ public class GameController : MonoBehaviour
             gamePlay.SaveGameSession();
         }
     }
-    #region  Button Event
+    #region  Booster Button Event
     public void ShuffleBoard()
     {
         if (hasWon || !isAnimEnded) return;
