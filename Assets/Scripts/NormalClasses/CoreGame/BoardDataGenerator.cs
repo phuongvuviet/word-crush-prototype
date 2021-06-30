@@ -32,34 +32,34 @@ public class BoardDataGenerator
             int isReversed = UnityEngine.Random.Range(0, 2);
             if (isReversed == 1) curWord = curWord.Reversed(); 
             int rd = UnityEngine.Random.Range(0, 2);
-            InsertVertical(curWord);
+            // InsertVertical(curWord);
             // InsertHorizontal(curWord);
             // if (i == 0) {
             //     InsertHorizontal(curWord);
             // } else {
             //     InsertVertical(curWord);
             // }
-            // if (rd == 0)
-            // {
-            //     if (!InsertVertical(curWord))
-            //     {
-            //         if (!InsertHorizontal(curWord))
-            //         {
-            //             Debug.LogError("FAIL TO GENERATE BOARD");
-            //             return GenerateBoard(words);
-            //         }
-            //     } 
-            // } else
-            // {
-            //     if (!InsertHorizontal(curWord))
-            //     {
-            //         if (!InsertVertical(curWord))
-            //         {
-            //             Debug.LogError("FAIL TO GENERATE BOARD");
-            //             return GenerateBoard(words);
-            //         }
-            //     } 
-            // }
+            if (rd == 0)
+            {
+                if (!InsertVertical(curWord))
+                {
+                    if (!InsertHorizontal(curWord))
+                    {
+                        Debug.LogError("FAIL TO GENERATE BOARD");
+                        return GenerateBoard(words);
+                    }
+                } 
+            } else
+            {
+                if (!InsertHorizontal(curWord))
+                {
+                    if (!InsertVertical(curWord))
+                    {
+                        Debug.LogError("FAIL TO GENERATE BOARD");
+                        return GenerateBoard(words);
+                    }
+                } 
+            }
         }
         boardData = RemoveEmptyColumnAndRow(boardData);
         boardWidth = boardData.GetLength(1);

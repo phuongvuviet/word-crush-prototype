@@ -160,7 +160,7 @@ public class WordStackGamePlay
         return boardLogic.GetNextHintPosition(remainingWords);
     }
     public bool IsHintWordCompleted() {
-        return boardLogic.IsHintWordCompleted(remainingWords);
+        return boardLogic.IsHintWordCompleted();
     }
     public List<Vector2Int> GetHintWordEndPositions() {
         HintWordInfo hintWord = boardLogic.GetHintWordInfo();

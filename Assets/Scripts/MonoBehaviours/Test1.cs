@@ -5,14 +5,15 @@ using DG.Tweening;
 
 public class Test1 : MonoBehaviour
 {
+    public int level = 1;
     public List<Transform> pos;
     public PathType pathType;
     public Transform targetTransfrom;
     Vector3 startPos;
 
-    private void Start() {
-        startPos = transform.position;
-        // Move();
+    private void Awake() {
+        PlayerPrefs.DeleteAll();
+        Prefs.CurrentLevel = level;
     }
 
     public void Move() {

@@ -24,7 +24,6 @@ public class GameController : MonoBehaviour
     WordStackGamePlay gamePlay;
     bool isAnimEnded = false; 
     bool hasWon = false;
-    BoardCell firstHintedCell = null;
 
     public bool IsAnimEnded{
         get => isAnimEnded;
@@ -87,8 +86,8 @@ public class GameController : MonoBehaviour
         boardUIController.gameObject.SetActive(true);
         answersDisplayer.SetWordAnswers(gamePlay.GetTargetWords());
         answersDisplayer.ShowAnswers(gamePlay.GetSolvedWords());
-        answersDisplayer.transform.DOScale(1.1f, .1f).OnComplete(() => {
-            answersDisplayer.transform.DOScale(1.0f, .1f);
+        answersDisplayer.transform.DOScale(1.1f, .2f).OnComplete(() => {
+            answersDisplayer.transform.DOScale(1.0f, .2f);
         });
         gamePlay.SetHintWord(gamePlay.GetGameSessionData().HintWord);
     }
@@ -183,6 +182,7 @@ public class GameController : MonoBehaviour
                             } else {
                                 Debug.LogError("Reset hinted cells");
                                 ResetHintedCells();
+                                gamePlay.ResetHintWord();
                             }
                         }
                         if (!gamePlay.CheckIfBoardValid()) {
@@ -240,9 +240,12 @@ public class GameController : MonoBehaviour
         isAnimEnded = false;
         // gamePlay.ResetHintWord();
         if (!gamePlay.IsHintWordCompleted()) {
+            Debug.Log(gamePlay.GetHintWordInfo());
             List<Vector2Int> hintEndPositions = gamePlay.GetHintWordEndPositions();
-            Debug.Log("Hint end position: " + hintEndPositions[0] + " " + hintEndPositions[1]);
+            Debug.Log("[Shuffleboard] Hint end positions: " + hintEndPositions[0] + " " + hintEndPositions[1]);
             boardUIController.UnhintCells(gamePlay.GetAllPositionsInRange(hintEndPositions[0], hintEndPositions[1]));
+        } else {
+            Debug.Log("[Shuffleboard] Hint is not completed");
         }  
         gamePlay.ResetHintWord();
         List<MoveInfo> moveInfos = gamePlay.ShuffleBoard();
@@ -253,6 +256,7 @@ public class GameController : MonoBehaviour
         Debug.Log("Hint - hasWon: " + hasWon + " isAnimEnded: " + isAnimEnded);
         if(hasWon || !isAnimEnded) return;
         Vector2Int hintPosition = gamePlay.GetNextHintPosition();
+        Debug.Log("[Hint]" + gamePlay.GetHintWordInfo() + " width: " + gamePlay.GetBoardWidth() + " height: " + gamePlay.GetBoardHeight());
         boardUIController.SetHintedCell(hintPosition);
         isAnimEnded = false;
         if (gamePlay.IsHintWordCompleted()) {

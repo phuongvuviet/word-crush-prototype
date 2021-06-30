@@ -14,15 +14,19 @@ public class BoardLogicController
         SetCharBoard(boardParam);
     }
     public void SetCharBoard(char[,] board) {
+        if (this.board != null) {
+            Debug.Log("Charboard len: " + this.board.GetLength(0) + " : " + this.board.GetLength(1) + " - " + board.GetLength(0) + " : " + board.GetLength(1));
+        }
         this.board = board;
         numCols = board.GetLength(1);
         numRows = board.GetLength(0);
     }
     public string GetWord(Vector2Int fromPos, Vector2Int toPos)
     {
+        Debug.Log("[GetWord] from: " + fromPos + " to: " + toPos + " height: " + board.GetLength(0) + " width: " + board.GetLength(1));
         string res = "";
         if (!VerifyInputPositions(fromPos, toPos)) return res;
-        Debug.Log("width: " + numCols + " height: " + numRows + " from: " + fromPos + " to: " + toPos);
+        // Debug.Log("width: " + numCols + " height: " + numRows + " from: " + fromPos + " to: " + toPos);
         if (fromPos.x == toPos.x)
         {
             if (fromPos.y > toPos.y)
@@ -80,8 +84,8 @@ public class BoardLogicController
     public List<Vector2Int> GetAllPositionsInRange(Vector2Int startPosition, Vector2Int endPosition)
     {
         List<Vector2Int> positions = new List<Vector2Int>(); 
+        if (startPosition == Vector2.one * -1) return positions;
         if (!VerifyInputPositions(startPosition, endPosition)) {
-            Debug.Log("Can not verity positions");
             positions.Add(startPosition);
             return positions;
         }
@@ -118,6 +122,7 @@ public class BoardLogicController
     //public void ResetValidWordColor(S)
     public bool VerifyInputPositions(Vector2Int startPosition, Vector2Int endPosition)
     {
+        if (startPosition == Vector2.one * -1 || endPosition == Vector2.one * -1) return false;
         if (startPosition == endPosition) return true;
         if (startPosition.x != endPosition.x && startPosition.y != endPosition.y)
         {
@@ -301,20 +306,17 @@ public class BoardLogicController
     }
 
     public Vector2Int GetNextHintPosition(List<string> remainingWords) {
+        Debug.Log("[BoardLogicController]");
         if (!hintWordInfo.HasWordInfo() || hintWordInfo.IsCompleted()) {
+            Debug.Log("[BoardLogicController]: " + hintWordInfo.HasWordInfo() + " " + hintWordInfo.IsCompleted());
             hintWordInfo = FindHintWord(remainingWords);
-        } 
+        } else {
+            Debug.Log("Vo liiiiii");
+        }
         return hintWordInfo.GetNextCharPosition();
     } 
 
-    public bool IsHintWordCompleted(List<string> remainingWords) {
-        if (hintWordInfo == null || hintWordInfo.Position == Vector2Int.one * -1) {
-            hintWordInfo = FindHintWord(remainingWords);
-        }
-        if (hintWordInfo == null) {
-            Debug.LogError("Invalid boarddd, need to verifyyyyyyyyyyyyyyyyy");
-            return true;
-        }
+    public bool IsHintWordCompleted() {
         return hintWordInfo.IsCompleted();
     }
     public bool HasHintWord() {
@@ -402,7 +404,7 @@ public class BoardLogicController
                         hasRes = true;
                         break;
                     } else {
-                        index = colWords[i].IndexOf(reversedRemainingWords[j]);
+                        index = curColWord.IndexOf(reversedRemainingWords[j]);
                         if (index != -1) {
                             res.Position = new Vector2Int(index + reversedRemainingWords[j].Length - 1, colWordIndex);
                             res.Word = reversedRemainingWords[j].Reversed();
