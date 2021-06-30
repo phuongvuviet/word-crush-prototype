@@ -236,16 +236,16 @@ public class GameController : MonoBehaviour
     public void ShuffleBoard()
     {
         if (hasWon || !isAnimEnded) return;
-        Debug.Log("Shuffle - anim ended: " + isAnimEnded + " has won: " + hasWon);
+        // Debug.Log("Shuffle - anim ended: " + isAnimEnded + " has won: " + hasWon);
         isAnimEnded = false;
         // gamePlay.ResetHintWord();
         if (!gamePlay.IsHintWordCompleted()) {
-            Debug.Log(gamePlay.GetHintWordInfo());
+            // Debug.Log(gamePlay.GetHintWordInfo());
             List<Vector2Int> hintEndPositions = gamePlay.GetHintWordEndPositions();
-            Debug.Log("[Shuffleboard] Hint end positions: " + hintEndPositions[0] + " " + hintEndPositions[1]);
+            // Debug.Log("[Shuffleboard] Hint end positions: " + hintEndPositions[0] + " " + hintEndPositions[1]);
             boardUIController.UnhintCells(gamePlay.GetAllPositionsInRange(hintEndPositions[0], hintEndPositions[1]));
         } else {
-            Debug.Log("[Shuffleboard] Hint is not completed");
+            // Debug.Log("[Shuffleboard] Hint is not completed");
         }  
         gamePlay.ResetHintWord();
         List<MoveInfo> moveInfos = gamePlay.ShuffleBoard();
@@ -253,10 +253,10 @@ public class GameController : MonoBehaviour
     }
 
     public void Hint() {
-        Debug.Log("Hint - hasWon: " + hasWon + " isAnimEnded: " + isAnimEnded);
+        // Debug.Log("Hint - hasWon: " + hasWon + " isAnimEnded: " + isAnimEnded);
         if(hasWon || !isAnimEnded) return;
         Vector2Int hintPosition = gamePlay.GetNextHintPosition();
-        Debug.Log("[Hint]" + gamePlay.GetHintWordInfo() + " width: " + gamePlay.GetBoardWidth() + " height: " + gamePlay.GetBoardHeight());
+        // Debug.Log("[Hint]" + gamePlay.GetHintWordInfo() + " width: " + gamePlay.GetBoardWidth() + " height: " + gamePlay.GetBoardHeight());
         boardUIController.SetHintedCell(hintPosition);
         isAnimEnded = false;
         if (gamePlay.IsHintWordCompleted()) {

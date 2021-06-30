@@ -18,7 +18,7 @@ public class FloatingWordController : MonoBehaviour
             letterInstance.GetComponent<RectTransform>().DOSizeDelta(targetSize, duration);
             MoveBenzier(letterInstance.transform, toPositions[i], () => {
                     if (!hasInvolved) {
-                        Debug.Log("Move letter done");
+                        // Debug.Log("Move letter done");
                         callback?.Invoke();
                         hasInvolved = true;
                     }
