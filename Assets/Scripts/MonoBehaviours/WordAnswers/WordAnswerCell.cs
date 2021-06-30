@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class WordAnswerCell : MonoBehaviour
 {
-    [SerializeField] Text letterText;
+    [SerializeField] TextMeshProUGUI letterText;
 
     // private void Start()
     // {

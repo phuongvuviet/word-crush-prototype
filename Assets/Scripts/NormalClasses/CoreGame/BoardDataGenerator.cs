@@ -32,8 +32,66 @@ public class BoardDataGenerator
             int isReversed = UnityEngine.Random.Range(0, 2);
             if (isReversed == 1) curWord = curWord.Reversed(); 
             int rd = UnityEngine.Random.Range(0, 2);
-            // InsertHorizontal(curWord);
             // InsertVertical(curWord);
+            // InsertHorizontal(curWord);
+            // if (i == 0) {
+            //     InsertHorizontal(curWord);
+            // } else {
+            //     InsertVertical(curWord);
+            // }
+            if (rd == 0)
+            {
+                if (!InsertVertical(curWord))
+                {
+                    if (!InsertHorizontal(curWord))
+                    {
+                        Debug.LogError("FAIL TO GENERATE BOARD");
+                        return GenerateBoard(words);
+                    }
+                } 
+            } else
+            {
+                if (!InsertHorizontal(curWord))
+                {
+                    if (!InsertVertical(curWord))
+                    {
+                        Debug.LogError("FAIL TO GENERATE BOARD");
+                        return GenerateBoard(words);
+                    }
+                } 
+            }
+        }
+        boardData = RemoveEmptyColumnAndRow(boardData);
+        boardWidth = boardData.GetLength(1);
+        boardHeight = boardData.GetLength(0);
+        return boardData;
+    }
+    public char[,] GenerateBoard(List<string> words, int maxWidth, int maxHeight) {
+        this.words = words; 
+        Shuffle(words);
+
+        cnt--;
+        if (cnt == 0)
+        {
+            Debug.Log("can not generate board");
+            return null;
+        } 
+        boardWidth = maxWidth;
+        boardHeight = maxHeight;
+        boardData = new char[boardHeight, boardWidth];
+        ResetCharBoard(boardData);
+        for (int i = 0; i < words.Count; i++)
+        {
+            string curWord = words[i];
+            int isReversed = UnityEngine.Random.Range(0, 2);
+            if (isReversed == 1) curWord = curWord.Reversed(); 
+            int rd = UnityEngine.Random.Range(0, 2);
+            // InsertHorizontal(curWord);
+            // if (i == 0) {
+            //     InsertHorizontal(curWord);
+            // } else {
+            //     InsertVertical(curWord);
+            // }
             if (rd == 0)
             {
                 if (!InsertVertical(curWord))

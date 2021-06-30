@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class WordPreviewer : MonoBehaviour
 {
-    [SerializeField] Text word; 
+    [SerializeField] TextMeshProUGUI word; 
     CanvasGroup canvasGroup;
 
     private void Awake() {
@@ -20,8 +21,5 @@ public class WordPreviewer : MonoBehaviour
     public void ResetText()
     {
         canvasGroup.alpha = 0;
-        // word.gameObject.SetActive(false);
-        // word.text = " ";
-        // word.text = "";
     }
 }

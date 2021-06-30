@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BoardUIController : MonoBehaviour 
@@ -7,30 +9,29 @@ public class BoardUIController : MonoBehaviour
     [SerializeField] RectTransform cellParent;
     [SerializeField] float cellMargin = 2f;
     BoardCell[,] uiBoard = null;
-    float boardScreenWidth, boardScreenHeight;
+    float boardCanvasWidth, boardCanvasHeight;
     RectTransform rectTrans;
     float cellSize;
+    float screenTopWorldPosition;
 
     private void Awake()
     {
         rectTrans = GetComponent<RectTransform>();
-        boardScreenWidth = rectTrans.rect.width;
-        boardScreenHeight = rectTrans.rect.height;
+        boardCanvasWidth = cellParent.rect.width;
+        boardCanvasHeight = cellParent.rect.height;
+        screenTopWorldPosition = Camera.main.ViewportToWorldPoint(Vector3.up).y;
     }
-    public void Initialize(char[,] board) {
+
+    public void Initialize(char[,] board, Action callback) {
+        StopAllCoroutines();
         if (uiBoard != null) {
             ClearUIBoard();
         }
         int boardHeight = board.GetLength(0);
         int boardWidth = board.GetLength(1);
-        cellSize = Mathf.Min(boardScreenHeight / board.GetLength(0), boardScreenWidth / board.GetLength(1));
-        if (cellSize * boardWidth < boardScreenWidth) {
-            cellParent.anchoredPosition = new Vector2((boardScreenWidth - (cellSize * boardWidth)) / 2.0f, cellParent.anchoredPosition.y); 
-        } else {
-            cellParent.anchoredPosition = new Vector2(0f, cellParent.anchoredPosition.y); 
-        }
+        ComputeCellSize(boardWidth, boardHeight);
         uiBoard = new BoardCell[boardHeight, boardWidth];
-        GenerateBoard(board);
+        StartCoroutine(GenerateBoard(board, callback));
     }
 
     void ClearUIBoard()
@@ -48,28 +49,40 @@ public class BoardUIController : MonoBehaviour
         }
     }
 
-    void GenerateBoard(char[,] charBoard)
+    IEnumerator GenerateBoard(char[,] charBoard, Action callback)
     {
         for (int i = 0; i < uiBoard.GetLength(0); i++)
         {
-            for (int j = 0; j < uiBoard.GetLength(1); j++)
+            StartCoroutine(GenerateBoardRow(charBoard, i));
+            yield return new WaitForSeconds(.1f);
+        }
+        callback?.Invoke();
+    }
+
+    IEnumerator GenerateBoardRow(char[,] charBoard, int row) {
+        for (int j = 0; j < uiBoard.GetLength(1); j++)
+        {
+            if (charBoard[row, j] != ' ')
             {
-                if (charBoard[i, j] != ' ')
-                {
-                    BoardCell newCell = Instantiate(cellPrefab, cellParent);
-                    newCell.SetLetter(charBoard[i, j]);
-                    newCell.SetPositionInBoard(new Vector2Int(i, j));
-                    newCell.SetCellSizeAndMargin(cellSize, cellMargin);
-                    RectTransform newCellRectTrans = newCell.GetComponent<RectTransform>();
-                    newCellRectTrans.anchorMin = Vector2.zero;
-                    newCellRectTrans.anchorMax = Vector2.zero;
-                    newCellRectTrans.pivot = Vector2.zero;
-                    newCellRectTrans.anchoredPosition = new Vector2(j * cellSize, i * cellSize);
-                    uiBoard[i, j] = newCell;
-                } else {
-                    uiBoard[i, j] = null;
-                }
+                BoardCell newCell = Instantiate(cellPrefab, cellParent);
+                newCell.SetLetter(charBoard[row, j]);
+                newCell.SetCellSizeAndMargin(cellSize, cellMargin);
+                RectTransform newCellRectTrans = newCell.GetComponent<RectTransform>();
+                newCellRectTrans.anchoredPosition = new Vector2(j, row) * cellSize + Vector2.one * cellSize / 2f;
+                newCell.transform.position = new Vector2(newCell.transform.position.x, screenTopWorldPosition + 1f);
+                uiBoard[row, j] = newCell;
+                newCell.SetPositionInBoardWhenStartGame(new Vector2Int(row, j));
+                yield return new WaitForSeconds(.05f);
+            } else {
+                uiBoard[row, j] = null;
             }
+            // yield return null;
+        }
+        if (row == uiBoard.GetLength(0) - 1) {
+            // GameController.Instance.SetIsAnimEnded(true);
+            // GameController.Instance.IsAnimEnded = true;
+            // Debug.LogError("Generate board succesful");
+            GameController.Instance.ShowHintedCells();
         }
     }
 
@@ -85,8 +98,23 @@ public class BoardUIController : MonoBehaviour
             }
         }
     }
-    public void SetCellState(Vector2Int position, BoardCell.BoardCellState state) {
-        uiBoard[position.x, position.y].SetState(state);
+    public IEnumerator COSetCellsState(List<Vector2Int> cellPositions, BoardCell.BoardCellState state) {
+        for (int i = 0; i < cellPositions.Count; i++)
+        {
+            Vector2Int pos = cellPositions[i];
+            if (uiBoard[pos.x, pos.y]) {
+                uiBoard[pos.x, pos.y].SetState(state);
+            } else {
+                Debug.Log("Change state of null cell : " + pos.x + "-" + pos.y);
+            }
+            if (state == BoardCell.BoardCellState.ACTIVE) {
+                yield return new WaitForSeconds(.02f);
+            }
+        }
+        yield return null;
+    }
+    public void SetCellState(Vector2Int position, BoardCell.BoardCellState state, bool useAnim = true) {
+        uiBoard[position.x, position.y].SetState(state, useAnim);
     }
     public void SetHintedCells(List<Vector2Int> positions) {
         for (int i = 0; i < positions.Count; i++) {
@@ -94,40 +122,92 @@ public class BoardUIController : MonoBehaviour
         }
     }
     public void SetHintedCell(Vector2Int pos) {
+        // Debug.Log("Set hint cell pos: " + pos);
         uiBoard[pos.x, pos.y].IsHinted = true;
     }
+    public void UnhintCells(List<Vector2Int> positions) {
+        for (int i = 0; i < positions.Count; i++) {
+            uiBoard[positions[i].x, positions[i].y].IsHinted = false;
+        }
+    }
+    public void UnhintCells() {
+        for (int i = 0; i < uiBoard.GetLength(0); i++) {
+            for (int j = 0; j < uiBoard.GetLength(1); j++) {
+                if (uiBoard[i, j] != null) {
+                    uiBoard[i, j].IsHinted = false;
+                } 
+            }
+        }
+    }
 
-    public void RemoveCellsAndUpdateBoard(CellSteps cellSteps)
+    public void RemoveCellsAndCollapseBoard(CellSteps cellSteps, Action callback = null)
     {
+        StartCoroutine(CORemoveCellslAndCollapsedBoard(cellSteps, callback));
+    }
+    IEnumerator CORemoveCellslAndCollapsedBoard(CellSteps cellSteps, Action callback = null) {
         for (int i = 0; i < cellSteps.CellsToDeletes.Count; i++) {
             Vector2Int cellPos = cellSteps.CellsToDeletes[i];
-            // Debug.Log(cellPos.x + " " + cellPos.y);
             Destroy(uiBoard[cellPos.x, cellPos.y].gameObject);
             uiBoard[cellPos.x, cellPos.y] = null;
         }
+        yield return new WaitForSeconds(.1f);
         for (int i = 0; i < cellSteps.Steps.Count; i++) {
-            Vector2Int lastPos = new Vector2Int(-1, -1);
-            for (int j = 0; j < cellSteps.Steps[i].Count; j++) {
-                MoveInfo moveInfo = cellSteps.Steps[i][j];
-                uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y] = uiBoard[moveInfo.FromPosition.x, moveInfo.FromPosition.y];//.SetPositionInBoard(moveInfo.ToPosition);
-                uiBoard[moveInfo.FromPosition.x, moveInfo.FromPosition.y] = null;
-                uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y].SetPositionInBoard(moveInfo.ToPosition);
-            }
+            for (int j = 0; j < cellSteps.Steps[i].Count; j++)
+			{
+				MoveInfo moveInfo = cellSteps.Steps[i][j];
+				UpdateUIBoard(moveInfo);
+				yield return null;
+			}
+			yield return null;
         }
-        UpdateCellsPosition();
+        for (int i = 0; i < cellSteps.HorizontallyCollapsedSteps.Count; i++) {
+            UpdateUIBoard(cellSteps.HorizontallyCollapsedSteps[i]);
+        }
+        callback?.Invoke();
+        // Debug.LogError("Remove cells doneeeeeeeeeeeeeeeeeeeeeeeeeeee");
     }
 
-    private void UpdateCellsPosition()
-    {
-        for (int j = 0; j < uiBoard.GetLength(1); j++)
-        {
-            for (int i = 0; i < uiBoard.GetLength(0); i++)
-            {
-                if (uiBoard[i, j])
-                {
-                    uiBoard[i, j].UpdateAnchoredPosition();
-                }
-            }
+	private void UpdateUIBoard(MoveInfo moveInfo)
+	{
+		uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y] = uiBoard[moveInfo.FromPosition.x, moveInfo.FromPosition.y];//.SetPositionInBoard(moveInfo.ToPosition);
+		uiBoard[moveInfo.FromPosition.x, moveInfo.FromPosition.y] = null;
+		uiBoard[moveInfo.ToPosition.x, moveInfo.ToPosition.y].SetPositionInBoard(moveInfo.ToPosition);
+	}
+
+    public void ShuffleBoard(List<MoveInfo> moveInfos, int boardWidth, int boardHeight) {
+        StartCoroutine(COShuffleBoard(moveInfos, boardWidth, boardHeight));
+    }
+    IEnumerator COShuffleBoard(List<MoveInfo> moveInfos, int boardWidth, int boardHeight) {
+        ComputeCellSize(boardWidth, boardHeight);
+        BoardCell[,] newUIBoard = new BoardCell[boardHeight, boardWidth];
+        for (int i = 0; i < moveInfos.Count; i++) {
+            // Debug.Log("Shuffe : " + moveInfos[i]);
+            newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y] = uiBoard[moveInfos[i].FromPosition.x, moveInfos[i].FromPosition.y];
+            newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y].SetCellSizeAndMargin(cellSize, cellMargin);
+            newUIBoard[moveInfos[i].ToPosition.x, moveInfos[i].ToPosition.y].SetPositionInBoard(moveInfos[i].ToPosition, .3f);
+            yield return null;
+        }
+        uiBoard = newUIBoard;
+        yield return new WaitForSeconds(.2f);
+        GameController.Instance.IsAnimEnded = true;
+    }
+
+	public List<Vector2> GetCellWorldPositions(List<Vector2Int> positions) {
+        List<Vector2> res = new List<Vector2>();
+        for (int i = 0; i < positions.Count; i++) {
+            res.Add(uiBoard[positions[i].x, positions[i].y].transform.position);
+        }
+        return res;
+    }
+    public Vector2 GetCellSize() {
+        return new Vector2(cellSize, cellSize);
+    }
+    void ComputeCellSize(int boardWidth, int boardHeight) {
+        cellSize = Mathf.Min(boardCanvasHeight / boardHeight, boardCanvasWidth / boardWidth);
+        if (cellSize * boardWidth < boardCanvasWidth) {
+            cellParent.anchoredPosition = new Vector2((boardCanvasWidth - (cellSize * boardWidth)) / 2.0f, cellParent.anchoredPosition.y); 
+        } else {
+            cellParent.anchoredPosition = new Vector2(0f, cellParent.anchoredPosition.y); 
         }
     }
 }
