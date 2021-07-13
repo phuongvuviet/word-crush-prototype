@@ -2,19 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace  WCross
+namespace WCross
 {
-    public class BoardGenerator : MonoBehaviour
+    public class BoardGenerator 
     {
-        const int MAX_WIDTH = 10;
-        const int MAX_HEIGHT = 10;
+        const int MAX_WIDTH = 14;
+        const int MAX_HEIGHT = 8;
         public DataModel levelData;
         List<BoardWord> boardWords = new List<BoardWord>();
         List<string> allWords; 
+        int boardGenerationCnt = 0;
         char[,] letterBoard = new char[MAX_HEIGHT, MAX_WIDTH];
 
-        int boardGenerationCnt = 0;
-        private void Start() {
+        public char[,] LetterBoard => letterBoard;
+
+        public BoardGenerator(DataModel dataModel) {
+            levelData = dataModel;
             GenerateBoard();
         }
 
@@ -36,14 +39,7 @@ namespace  WCross
                 cnt++;
                 // Debug.Log("cnt: " + cnt++ + " allword: " + allWords.Count);
                 if (cnt > 50) {
-                    // Debug.LogError("Cann't create word");
-                    // string remainWords = "";
-                    // for (int i = 0; i < allWords.Count; i++) {
-                    //     remainWords += allWords[i] + "--";
-                    // }
-                    // Debug.LogError(remainWords);
                     boardGenerationCnt ++;
-                    // Debug.LogError("Board generation cnt: " + boardGenerationCnt);
                     if (boardGenerationCnt > 1000) {
                         Debug.LogError("Can can not not generate board");
                         return;
@@ -53,10 +49,75 @@ namespace  WCross
                     return;
                 } 
             }
-            Debug.Log("Cnt: " + boardGenerationCnt);
-            Print();
+            int[] boundingPositions = GetBoundingBoxPositions(letterBoard); 
+            int left = boundingPositions[0], right = boundingPositions[1], top = boundingPositions[2], bottom = boundingPositions[3]; 
+            int newWidth = Mathf.Abs(boundingPositions[0] - boundingPositions[1]) + 1;
+            int newHeight = Mathf.Abs(boundingPositions[2] - boundingPositions[3]) + 1;
+            char[,] tmpLetterBoard = new char[newHeight, newWidth]; 
+            for (int i = bottom; i <= top; i++) {
+                for (int j = left; j <= right; j++) {
+                    tmpLetterBoard[i - bottom, j - left] = letterBoard[i, j];
+                }
+            }
+            letterBoard = tmpLetterBoard;
         }
-        BoardWord ChooseRandomBoardWord() {
+
+        /// <summary>
+        /// Get 4 positions which create a smallest box containg all characters
+        /// </summary>
+        /// <returns></returns>
+        int[] GetBoundingBoxPositions(char[,] board) {
+            int height = board.GetLength(0);
+            int width  = board.GetLength(1);
+            int left = 0, right = board.GetLength(1) - 1, top = board.GetLength(0) - 1, bottom = 0;
+            bool found = false;
+            for (int i = 0; i < width; i++) {
+                if (found) break;
+                for (int j = 0; j < height; j++) {
+                    if (board[j, i] != ' ') {
+                        left = i;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            found = false;
+            for (int i = width - 1; i >= 0; i--) {
+                if (found) break;
+                for (int j = 0; j < height; j++) {
+                    if (board[j, i] != ' ') {
+                        right = i;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            found = false;
+            for (int i = 0; i < height; i++) {
+                if (found) break;
+                for (int j = 0; j < width; j++) {
+                    if (board[i, j] != ' ') {
+                        bottom = i;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            found = false;
+            for (int i = height - 1; i >= 0; i--) {
+                if (found) break;
+                for (int j = 0; j < width; j++) {
+                    if (board[i, j] != ' ') {
+                        top = i;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            return new int[]{left, right, top, bottom};
+        }
+
+        private BoardWord ChooseRandomBoardWord() {
             if (boardWords.Count == 0) return null;
             return boardWords[UnityEngine.Random.Range(0, boardWords.Count)];
         }
@@ -72,37 +133,37 @@ namespace  WCross
             BoardWord boardWord = new BoardWord();
             bool canCreate = false;
             if (preBoardWord == null) {
-                boardWord.word = GetRandomWord();
+                boardWord.Word = GetRandomWord();
                 canCreate = true;
                 int rd = UnityEngine.Random.Range(1, 1000000) % 2; 
                 Vector2Int insertedPos = new Vector2Int(MAX_HEIGHT / 2, MAX_WIDTH / 2);
                 if (rd == 0) {
-                    boardWord.direction = new Vector2Int(0, 1);
-                    insertedPos.y -= boardWord.word.Length / 2;
+                    boardWord.Direction = new Vector2Int(0, 1);
+                    insertedPos.y -= boardWord.Word.Length / 2;
                 } else {
-                    boardWord.direction = new Vector2Int(-1, 0);
-                    insertedPos.x += boardWord.word.Length / 2;
+                    boardWord.Direction = new Vector2Int(-1, 0);
+                    insertedPos.x += boardWord.Word.Length / 2;
                 }
-                boardWord.startPosition = insertedPos; 
+                boardWord.StartPosition = insertedPos; 
             } else {
                 // Debug.Log("Pre board word not null");
-                for (int i = 0; i < preBoardWord.word.Length; i++) {
-                    string nextWord = GetWordContainingLetter(preBoardWord.word[i]);
+                for (int i = 0; i < preBoardWord.Word.Length; i++) {
+                    string nextWord = GetWordContainingLetter(preBoardWord.Word[i]);
                     // Debug.Log("Next word: " + nextWord);
                     if (nextWord != null) {
-                        Vector2Int insertPosition = preBoardWord.startPosition + preBoardWord.direction * i;
+                        Vector2Int insertPosition = preBoardWord.StartPosition + preBoardWord.Direction * i;
                         // Debug.Log("Word: " + nextWord + " - Insert position: " + insertPosition);
-                        int insertPointInCurWord = nextWord.IndexOf(preBoardWord.word[i]); 
-                        if (ValidateInsertPosition(insertPosition, insertPointInCurWord, preBoardWord.direction, nextWord)) {
+                        int insertPointInCurWord = nextWord.IndexOf(preBoardWord.Word[i]); 
+                        if (ValidateInsertPosition(insertPosition, insertPointInCurWord, preBoardWord.Direction, nextWord)) {
                             // Debug.LogError("Validate position");
-                            if (preBoardWord.direction == new Vector2Int(0, 1)) { // right
-                                boardWord.startPosition = new Vector2Int(insertPosition.x + insertPointInCurWord, insertPosition.y); 
-                                boardWord.direction = new Vector2Int(-1, 0);
+                            if (preBoardWord.Direction == new Vector2Int(0, 1)) { // right
+                                boardWord.StartPosition = new Vector2Int(insertPosition.x + insertPointInCurWord, insertPosition.y); 
+                                boardWord.Direction = new Vector2Int(-1, 0);
                             } else { // down
-                                boardWord.startPosition = new Vector2Int(insertPosition.x, insertPosition.y - insertPointInCurWord);
-                                boardWord.direction = new Vector2Int(0, 1);
+                                boardWord.StartPosition = new Vector2Int(insertPosition.x, insertPosition.y - insertPointInCurWord);
+                                boardWord.Direction = new Vector2Int(0, 1);
                             }
-                            boardWord.word = nextWord;
+                            boardWord.Word = nextWord;
                             canCreate = true;
                         } else {
                             // Debug.LogError("Can not validate position");
@@ -113,7 +174,7 @@ namespace  WCross
             if (canCreate) {
                 boardWords.Add(boardWord);
                 AddWordToLetterBoard(boardWord);
-                allWords.Remove(boardWord.word);
+                allWords.Remove(boardWord.Word);
             }
             return canCreate;
         }
@@ -188,11 +249,11 @@ namespace  WCross
         }
         void AddWordToLetterBoard(BoardWord boardWord) {
             // Debug.Log("add word: " + boardWord);
-            Vector2Int startPos = boardWord.startPosition;
-            string word = boardWord.word;
+            Vector2Int startPos = boardWord.StartPosition;
+            string word = boardWord.Word;
             for (int i = 0; i < word.Length; i++) {
                 letterBoard[startPos.x, startPos.y] = word[i]; 
-                startPos += boardWord.direction;
+                startPos += boardWord.Direction;
             }
         }
         string GetWordContainingLetter(char letter) {
@@ -223,12 +284,12 @@ namespace  WCross
     }
 
     public class BoardWord{
-        public string word;
-        public Vector2Int startPosition;
-        public Vector2Int direction;
+        public string Word;
+        public Vector2Int StartPosition;
+        public Vector2Int Direction;
 
         public override string ToString(){
-            return word + " - " + startPosition + " - " + direction;
+            return Word + " - " + StartPosition + " - " + Direction;
         }
     }
 }

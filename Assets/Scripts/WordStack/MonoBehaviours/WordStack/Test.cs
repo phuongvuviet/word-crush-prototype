@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Test : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler
+public class Test : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IDragHandler
 {
     public void OnDrag(PointerEventData eventData)
     {
