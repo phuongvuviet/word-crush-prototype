@@ -22,21 +22,35 @@
           </e>
         </e>
         <e p="Scripts" t="Include">
+          <e p="Common" t="Include">
+            <e p="Moving" t="Include">
+              <e p="MovingElement.cs" t="Include" />
+            </e>
+          </e>
+          <e p="SafeArea.cs" t="Include" />
           <e p="WordCross" t="Include">
             <e p="Controllers" t="Include">
               <e p="BoardGenerator.cs" t="Include" />
+              <e p="SaveLoadProgressController.cs" t="Include" />
+              <e p="WCBoardController.cs" t="Include" />
               <e p="WCGameController.cs" t="Include" />
             </e>
             <e p="Models" t="Include">
-              <e p="DataModel.cs" t="Include" />
               <e p="LetterModel.cs" t="Include" />
+              <e p="LevelDataModel.cs" t="Include" />
+              <e p="SessionDataModel.cs" t="Include" />
+              <e p="WordModel.cs" t="Include" />
             </e>
             <e p="ViewModels" t="Include">
-              <e p="BoardViewModel.cs" t="Include" />
+              <e p="Effects" t="Include">
+                <e p="FloatingLetterViewModel.cs" t="Include" />
+                <e p="FloatingWordViewModel.cs" t="Include" />
+              </e>
               <e p="GameViewModel.cs" t="Include" />
               <e p="LetterBoardViewModel.cs" t="Include" />
               <e p="LetterTileViewModel.cs" t="Include" />
-              <e p="SellectingWordViewModel.cs" t="Include" />
+              <e p="LineSegmentViewModel.cs" t="Include" />
+              <e p="SelectingWordViewModel.cs" t="Include" />
               <e p="WheelLetterViewModel.cs" t="Include" />
               <e p="WheelViewModel.cs" t="Include" />
             </e>

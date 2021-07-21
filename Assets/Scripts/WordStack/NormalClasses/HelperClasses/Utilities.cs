@@ -42,7 +42,7 @@ public static class Utilities
     {
         for (int i = list.Count - 1; i >= 1; i--)
         {
-            int rdIndex = UnityEngine.Random.Range(0, i + 1);
+            int rdIndex = Random.Range(0, i);
             T tmpValue = list[i];
             list[i] = list[rdIndex];
             list[rdIndex] = tmpValue;

@@ -8,28 +8,28 @@ namespace WCross
     {
         const int MAX_WIDTH = 14;
         const int MAX_HEIGHT = 8;
-        public DataModel levelData;
+        LevelDataModel _levelData;
         List<BoardWord> boardWords = new List<BoardWord>();
         List<string> allWords; 
         int boardGenerationCnt = 0;
-        char[,] letterBoard = new char[MAX_HEIGHT, MAX_WIDTH];
+        LetterModel[,] letterBoard = new LetterModel[MAX_HEIGHT, MAX_WIDTH];
 
-        public char[,] LetterBoard => letterBoard;
+        public LetterModel[,] LetterBoard => letterBoard;
 
-        public BoardGenerator(DataModel dataModel) {
-            levelData = dataModel;
+        public BoardGenerator(LevelDataModel levelDataModel) {
+            _levelData = levelDataModel;
             GenerateBoard();
         }
 
         public void GenerateBoard() {
             allWords = new List<string>(); 
-            foreach (var word in levelData.Words) {
+            foreach (var word in _levelData.Words) {
                 allWords.Add(word);
             }
             Utilities.Shuffle(allWords);
             for (int i = 0; i < MAX_HEIGHT; i++) {
                 for (int j = 0; j < MAX_WIDTH; j++) {
-                    letterBoard[i, j] = ' ';
+                    letterBoard[i, j] = null;
                 }
             }
             boardWords.Clear();
@@ -53,10 +53,13 @@ namespace WCross
             int left = boundingPositions[0], right = boundingPositions[1], top = boundingPositions[2], bottom = boundingPositions[3]; 
             int newWidth = Mathf.Abs(boundingPositions[0] - boundingPositions[1]) + 1;
             int newHeight = Mathf.Abs(boundingPositions[2] - boundingPositions[3]) + 1;
-            char[,] tmpLetterBoard = new char[newHeight, newWidth]; 
+            LetterModel[,] tmpLetterBoard = new LetterModel[newHeight, newWidth]; 
             for (int i = bottom; i <= top; i++) {
                 for (int j = left; j <= right; j++) {
                     tmpLetterBoard[i - bottom, j - left] = letterBoard[i, j];
+                    if (tmpLetterBoard[i - bottom, j - left] != null) {
+                        tmpLetterBoard[i - bottom, j - left].Position = new Vector2Int(i - bottom, j - left);
+                    }
                 }
             }
             letterBoard = tmpLetterBoard;
@@ -66,7 +69,7 @@ namespace WCross
         /// Get 4 positions which create a smallest box containg all characters
         /// </summary>
         /// <returns></returns>
-        int[] GetBoundingBoxPositions(char[,] board) {
+        int[] GetBoundingBoxPositions(LetterModel[,] board) {
             int height = board.GetLength(0);
             int width  = board.GetLength(1);
             int left = 0, right = board.GetLength(1) - 1, top = board.GetLength(0) - 1, bottom = 0;
@@ -74,7 +77,7 @@ namespace WCross
             for (int i = 0; i < width; i++) {
                 if (found) break;
                 for (int j = 0; j < height; j++) {
-                    if (board[j, i] != ' ') {
+                    if (board[j, i] != null) {
                         left = i;
                         found = true;
                         break;
@@ -85,7 +88,7 @@ namespace WCross
             for (int i = width - 1; i >= 0; i--) {
                 if (found) break;
                 for (int j = 0; j < height; j++) {
-                    if (board[j, i] != ' ') {
+                    if (board[j, i] != null) {
                         right = i;
                         found = true;
                         break;
@@ -96,7 +99,7 @@ namespace WCross
             for (int i = 0; i < height; i++) {
                 if (found) break;
                 for (int j = 0; j < width; j++) {
-                    if (board[i, j] != ' ') {
+                    if (board[i, j] != null) {
                         bottom = i;
                         found = true;
                         break;
@@ -107,7 +110,7 @@ namespace WCross
             for (int i = height - 1; i >= 0; i--) {
                 if (found) break;
                 for (int j = 0; j < width; j++) {
-                    if (board[i, j] != ' ') {
+                    if (board[i, j] != null) {
                         top = i;
                         found = true;
                         break;
@@ -146,16 +149,12 @@ namespace WCross
                 }
                 boardWord.StartPosition = insertedPos; 
             } else {
-                // Debug.Log("Pre board word not null");
                 for (int i = 0; i < preBoardWord.Word.Length; i++) {
                     string nextWord = GetWordContainingLetter(preBoardWord.Word[i]);
-                    // Debug.Log("Next word: " + nextWord);
                     if (nextWord != null) {
                         Vector2Int insertPosition = preBoardWord.StartPosition + preBoardWord.Direction * i;
-                        // Debug.Log("Word: " + nextWord + " - Insert position: " + insertPosition);
                         int insertPointInCurWord = nextWord.IndexOf(preBoardWord.Word[i]); 
                         if (ValidateInsertPosition(insertPosition, insertPointInCurWord, preBoardWord.Direction, nextWord)) {
-                            // Debug.LogError("Validate position");
                             if (preBoardWord.Direction == new Vector2Int(0, 1)) { // right
                                 boardWord.StartPosition = new Vector2Int(insertPosition.x + insertPointInCurWord, insertPosition.y); 
                                 boardWord.Direction = new Vector2Int(-1, 0);
@@ -188,28 +187,38 @@ namespace WCross
             // if preWord is horizontal -> insert vertically
             if (preBoardWordDirection == new Vector2Int(0, 1)) {
                 // insert vertical 
-                Vector2Int startWordPos = new Vector2Int(crossedPosition.x + insertPointInCurWord, crossedPosition.y); 
+                Vector2Int startWordPos = new Vector2Int(crossedPosition.x + insertPointInCurWord, crossedPosition.y);
+                int sameLetterCnt = 0;
                 for (int i = 0; i < curWordLength; i++) { 
                     if (startWordPos.x < 0 || startWordPos.x >= MAX_HEIGHT || startWordPos.y < 0 || startWordPos.y >= MAX_WIDTH) {
                         return false;
                     }
-                    if (letterBoard[startWordPos.x, startWordPos.y] == ' ') {
-                        if ((startWordPos.y + 1 < MAX_WIDTH && letterBoard[startWordPos.x, startWordPos.y + 1] != ' ') 
-                        || (startWordPos.y - 1 >= 0 && letterBoard[startWordPos.x, startWordPos.y - 1] != ' ')) {
+                    if (letterBoard[startWordPos.x, startWordPos.y] == null)
+                    {
+                        sameLetterCnt = 0;
+                        if ((startWordPos.y + 1 < MAX_WIDTH && letterBoard[startWordPos.x, startWordPos.y + 1] != null) 
+                        || (startWordPos.y - 1 >= 0 && letterBoard[startWordPos.x, startWordPos.y - 1] != null)) {
                             return false;
                         } 
-                    } else {
-                        if (letterBoard[startWordPos.x, startWordPos.y] != word[i]) {
+                    } else
+                    {
+                        if (letterBoard[startWordPos.x, startWordPos.y].Letter != word[i])
+                        {
                             return false;
+                        }
+                        else
+                        {
+                            sameLetterCnt++;
+                            if (sameLetterCnt >= 2) return false;
                         }
                     }
                     if (i == 0) {
-                        if (startWordPos.x + 1 < MAX_HEIGHT && letterBoard[startWordPos.x + 1, startWordPos.y] != ' ') {
+                        if (startWordPos.x + 1 < MAX_HEIGHT && letterBoard[startWordPos.x + 1, startWordPos.y] != null) {
                             return false;
                         }
                     }
                     if (i == curWordLength - 1) {
-                        if (startWordPos.x - 1 >= 0 && letterBoard[startWordPos.x - 1, startWordPos.y] != ' ') {
+                        if (startWordPos.x - 1 >= 0 && letterBoard[startWordPos.x - 1, startWordPos.y] != null) {
                             return false;
                         }
                     }
@@ -217,33 +226,42 @@ namespace WCross
                 }
             } else { // else if preWord is vertical -> insert horizontal
                 // insert horizontal
+                int sameLetterCnt = 0;
                 Vector2Int startWordPos = new Vector2Int(crossedPosition.x, crossedPosition.y - insertPointInCurWord);
                 for (int i = 0; i < curWordLength; i++) {
                     if (startWordPos.x < 0 || startWordPos.x >= MAX_HEIGHT || startWordPos.y < 0 || startWordPos.y >= MAX_WIDTH) {
                         return false;
                     }
-                    if (letterBoard[startWordPos.x, startWordPos.y] == ' ') {
-                        if (( startWordPos.x - 1 >= 0 && letterBoard[startWordPos.x - 1, startWordPos.y] != ' ') 
-                            || (startWordPos.x + 1 < MAX_HEIGHT && letterBoard[startWordPos.x + 1, startWordPos.y] != ' ')) {
+                    if (letterBoard[startWordPos.x, startWordPos.y] == null)
+                    {
+                        sameLetterCnt = 0;
+                        if (( startWordPos.x - 1 >= 0 && letterBoard[startWordPos.x - 1, startWordPos.y] != null) 
+                            || (startWordPos.x + 1 < MAX_HEIGHT && letterBoard[startWordPos.x + 1, startWordPos.y] != null)) {
                             return false;
                         } 
                     } else {
-                        if (letterBoard[startWordPos.x, startWordPos.y] != word[i]) {
+                        if (letterBoard[startWordPos.x, startWordPos.y].Letter != word[i]) {
                             return false;
+                        }
+                        else
+                        {
+                            sameLetterCnt++;
+                            if (sameLetterCnt >= 2) return false;
                         }
                     }
                     if (i == 0) {
-                        if (startWordPos.y - 1 >= 0 && letterBoard[startWordPos.x, startWordPos.y - 1] != ' ') {
+                        if (startWordPos.y - 1 >= 0 && letterBoard[startWordPos.x, startWordPos.y - 1] != null) {
                             return false;
                         }
                     }
                     if (i == curWordLength - 1) {
-                        if (startWordPos.y + 1 < MAX_WIDTH && letterBoard[startWordPos.x, startWordPos.y + 1] != ' ') {
+                        if (startWordPos.y + 1 < MAX_WIDTH && letterBoard[startWordPos.x, startWordPos.y + 1] != null) {
                             return false;
                         }
                     }
                     startWordPos += new Vector2Int(0, 1);
                 }
+                if (sameLetterCnt == word.Length) return false;
             }
             return true;
         }
@@ -252,7 +270,10 @@ namespace WCross
             Vector2Int startPos = boardWord.StartPosition;
             string word = boardWord.Word;
             for (int i = 0; i < word.Length; i++) {
-                letterBoard[startPos.x, startPos.y] = word[i]; 
+                LetterModel curLetterModel = new LetterModel();
+                curLetterModel.Letter = word[i];
+                curLetterModel.Position = startPos;
+                letterBoard[startPos.x, startPos.y] = curLetterModel; 
                 startPos += boardWord.Direction;
             }
         }
@@ -270,7 +291,7 @@ namespace WCross
             string str = "";
             for (int i = letterBoard.GetLength(0) - 1; i >= 0; i--) {
                 for (int j = 0; j < letterBoard.GetLength(1); j++) {
-                    if (letterBoard[i, j] == ' ') {
+                    if (letterBoard[i, j] == null) {
                         str += "-";
                     } else {
                         str += letterBoard[i, j];

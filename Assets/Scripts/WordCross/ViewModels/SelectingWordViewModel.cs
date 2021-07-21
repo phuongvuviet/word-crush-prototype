@@ -4,7 +4,7 @@ using System;
 using TMPro;
 using UnityEngine;
 
-public class SellectingWordViewModel : MonoBehaviour
+public class SelectingWordViewModel : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _wordTxt;
     private RectTransform _rectTransform;
@@ -13,6 +13,7 @@ public class SellectingWordViewModel : MonoBehaviour
     private void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
+        ChangeSelectingWord("");
     }
 
     public void Init()
@@ -23,10 +24,8 @@ public class SellectingWordViewModel : MonoBehaviour
 
     public void ChangeSelectingWord(string newWord)
     {
-        // Debug.Log("Word: " + newWord);
         _word = newWord;
         _wordTxt.text = _word;
         _rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _wordTxt.preferredWidth + 30);
-        // Debug.Log("preffered width: " + _wordTxt.preferredWidth);
     }
 }

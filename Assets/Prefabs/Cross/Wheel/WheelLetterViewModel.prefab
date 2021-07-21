@@ -91,7 +91,7 @@ MonoBehaviour:
   _letterTxt: {fileID: 51667023448934302}
   _circleImage: {fileID: 51667023262751435}
   _normalColor: {r: 0, g: 0, b: 0, a: 0}
-  _selectedColor: {r: 0.6823239, g: 0.8679245, b: 0.64275545, a: 0.89411765}
+  _selectedColor: {r: 0.3066038, g: 0.9416196, b: 1, a: 1}
 --- !u!1 &51667023448934300
 GameObject:
   m_ObjectHideFlags: 0
@@ -183,12 +183,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 168.95
+  m_fontSize: 150
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 200
+  m_fontSizeMax: 150
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512

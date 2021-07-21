@@ -12,8 +12,8 @@ public class Test1 : MonoBehaviour
     Vector3 startPos;
 
     private void Awake() {
-        PlayerPrefs.DeleteAll();
-        Prefs.CurrentLevel = level;
+        // PlayerPrefs.DeleteAll();
+        // Prefs.CurrentLevel = level;
     }
 
     public void Move() {
@@ -23,6 +23,16 @@ public class Test1 : MonoBehaviour
             waypoints[i] = pos[i].position;
         }
         transform.DOPath(waypoints, 2, pathType, PathMode.Ignore, 10, Color.red);
+    }
+
+    public void Move3()
+    {
+        Debug.Log("Distance: " + Vector3.Distance(transform.position, targetTransfrom.position));
+        Vector3 direction = (targetTransfrom.position - transform.position).normalized;
+        Vector3 perpen = Vector3.Cross(direction, Vector3.forward);
+        Vector3 controlPoint1 = transform.position + direction + perpen; 
+        Vector3[] path = {transform.position, controlPoint1, targetTransfrom.position};
+        transform.DOPath(path, 10, PathType.CatmullRom, PathMode.Sidescroller2D, 10, Color.red).SetEase(Ease.Linear);
     }
 
     public void Move2() {

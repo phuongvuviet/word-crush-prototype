@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 49bf7a2fefea341fa8bdacd68943fb7e, type: 3}
-  m_Name: LevelData1
+  m_Name: LevelData3
   m_EditorClassIdentifier: 
   Words:
-  - now
-  - own
-  - won
-  Letters: onw
+  - are
+  - ear
+  - era
+  Letters: are
+  BoardLayout: []
